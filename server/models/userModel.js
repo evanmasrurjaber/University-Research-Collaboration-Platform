@@ -13,9 +13,24 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true
+    },
+    role: {
+        type: String,
+        enum: ["student", "faculty"],
+        default: "student",
+        required: true
+    },
+    department: {
+        type: String,
+        required: true
+    },
+    profile: {
+        bio: {type: String, default: ""},
+        profilePhotoUrl: {type: String, default: ""},
+        interests: {type: [String], default: []}
     }
 }, { timestamps: true });
 
-const User = mongoose.model("User", userSchema);
+const userModel = mongoose.models.user || mongoose.model("user", userSchema);
 
-export default User;
+export default userModel;
