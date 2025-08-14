@@ -25,7 +25,7 @@ export const register = async (req, res) => {
         });
         await user.save();
         const token = jwt.sign({userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-        user = {
+        const userResponse = {
             _id: user._id,
             name: user.name,
             email: user.email,
@@ -38,7 +38,7 @@ export const register = async (req, res) => {
             secure: process.env.NODE_ENV === 'production',
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
             maxAge: 1 * 24 * 60 * 60 * 1000
-        }).json({success: true, user, message: `Account for ${user.name} created successfully!`});
+        }).json({success: true, user: userResponse, message: `Account for ${userResponse.name} created successfully!`});
 
     }catch (error){
         res.status(500).json({success: false, message: error.message})
@@ -52,7 +52,7 @@ export const login = async(req, res) => {
     }
 
     try{
-        const user = await userModel.findOneAndUpdate({email});
+        const user = await userModel.findOne({email});
         if (!user) {
             return res.status(400).json({success: false, message: "Email or password is incorrect" });
         }
@@ -61,7 +61,7 @@ export const login = async(req, res) => {
             return res.status(400).json({success: false, message: "Email or password is incorrect" });
         }
         const token = jwt.sign({userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-        user = {
+        const userResponse = {
             _id: user._id,
             name: user.name,
             email: user.email,
@@ -74,7 +74,7 @@ export const login = async(req, res) => {
             secure: process.env.NODE_ENV === 'production',
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
             maxAge: 1 * 24 * 60 * 60 * 1000
-        }).json({success: true, user, message: `Welcome back ${user.name}`});
+        }).json({success: true, user: userResponse, message: `Welcome back ${userResponse.name.split(" ")[0]}`});
 
     } catch(error){
         return res.status(500).json({success: false, message: error.message });
@@ -91,23 +91,39 @@ export const logout = async (req, res) => {
 };
 
 export const updateProfile = async (req, res) => {
-    const {name, email, department, bio, profilePhotoUrl, interests} = req.body;
     const userId = req.user.id;
+    
     try {
         const user = await userModel.findById(userId);
         if (!user) {
             return res.status(404).json({success: false, message: "User not found" });
         }
 
-        user.name = name;
-        user.email = email;
-        user.department = department;
-        user.profile.bio = bio;
-        user.profile.profilePhotoUrl = profilePhotoUrl;
-        user.profile.interests = interests;
+        const allowedFields = ['name', 'email', 'department', 'profile.bio', 'profile.profilePhotoUrl', 'profile.interests'];
+        const updatedFields = [];
+        Object.entries(req.body).forEach(([key, value]) => {
+            if (allowedFields.includes(key) && value !== undefined && value !== null) {
+                let fieldPath = key; 
+                if (fieldPath.includes('.')) {
+                    fieldPath = fieldPath.split('.');
+                    user[fieldPath[0]][fieldPath[1]] = value;
+                } else {
+                    user[fieldPath] = value;
+                }
+                updatedFields.push(key);
+            }
+        });
+
+        if (updatedFields.length === 0) {
+            return res.status(400).json({
+                success: false, 
+                message: "No valid fields provided for update"
+            });
+        }
 
         await user.save();
-        user = {
+        
+        const userResponse = {
             _id: user._id,
             name: user.name,
             email: user.email,
@@ -115,7 +131,12 @@ export const updateProfile = async (req, res) => {
             department: user.department,
             profile: user.profile
         }
-        return res.status(200).json({success: true, message: "Profile updated successfully", user});
+        
+        return res.status(200).json({
+            success: true, 
+            message: `Profile updated successfully. Updated fields: ${updatedFields.join(', ')}`, 
+            user: userResponse
+        });
     } catch (error) {
         return res.status(500).json({success: false, message: error.message });
     }

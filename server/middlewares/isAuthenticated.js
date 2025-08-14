@@ -10,7 +10,7 @@ const isAuthenticated = async (req, res, next) => {
         if (!decoded) {
             return res.status(401).json({success: false, message: "invalid token" });
         }
-        req.id = decoded.userId;
+        req.user = { id: decoded.userId };
         next();
     } catch (error) {
         return res.status(500).json({success: false, message: error.message });
