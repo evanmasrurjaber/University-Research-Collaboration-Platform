@@ -28,6 +28,13 @@ const userSchema = new mongoose.Schema({
         bio: {type: String, default: ""},
         profilePhotoUrl: {type: String, default: ""},
         interests: {type: [String], default: []}
+    },
+    preferences: {
+        theme: {
+            type: String,
+            enum: ["light", "dark"],
+            default: "light"
+        }
     }
 }, { timestamps: true });
 

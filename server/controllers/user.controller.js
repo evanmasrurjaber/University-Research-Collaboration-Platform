@@ -31,7 +31,8 @@ export const register = async (req, res) => {
             email: user.email,
             role: user.role,
             department: user.department,
-            profile: user.profile
+            profile: user.profile,
+            preferences: user.preferences
         }
         return res.cookie("token", token, {
             httpOnly: true,
@@ -67,7 +68,8 @@ export const login = async(req, res) => {
             email: user.email,
             role: user.role,
             department: user.department,
-            profile: user.profile
+            profile: user.profile,
+            preferences: user.preferences
         }
         return res.cookie("token", token, {
             httpOnly: true,
@@ -129,7 +131,8 @@ export const updateProfile = async (req, res) => {
             email: user.email,
             role: user.role,
             department: user.department,
-            profile: user.profile
+            profile: user.profile,
+            preferences: user.preferences
         }
         
         return res.status(200).json({
@@ -142,3 +145,47 @@ export const updateProfile = async (req, res) => {
     }
 
 }
+
+export const getTheme = async (req, res) => {
+    const userId = req.user.id;
+    
+    try {
+        const user = await userModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({success: false, message: "User not found" });
+        } 
+        return res.status(200).json({
+            success: true, 
+            theme: user.preferences?.theme || "light",
+            message: "Theme retrieved successfully"
+        });
+    } catch (error) {
+        return res.status(500).json({success: false, message: error.message });
+    }
+};
+
+export const updateTheme = async (req, res) => {
+    const userId = req.user.id;
+    const { theme } = req.body;
+    try {
+        const user = await userModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({success: false, message: "User not found" });
+        }
+
+        if (!user.preferences) {
+            user.preferences = {};
+        }
+        
+        user.preferences.theme = theme;
+        await user.save();
+        
+        return res.status(200).json({
+            success: true, 
+            theme: user.preferences.theme,
+            message: `Theme updated to ${theme} successfully`
+        });
+    } catch (error) {
+        return res.status(500).json({success: false, message: error.message });
+    }
+};

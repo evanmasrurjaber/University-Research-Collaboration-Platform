@@ -1,11 +1,13 @@
 import { Button } from "@/components/ui/button"
- 
+import Navigationbar from "./components/shared/Navigationbar"
+import { useState, useEffect } from 'react';
+
 function App() {
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center">
-      <Button>Click me</Button>
+    <div className={`min-h-screen dark bg-black`}>
+      <Navigationbar />
     </div>
   )
 }
- 
+
 export default App
