@@ -12,6 +12,7 @@ import 'lucide-react';
 import { LogOut, LucideNewspaper, User2 } from 'lucide-react';
 
 export const Navigationbar = () => {
+  const user = false
   const navItems = [
     {
       name: "Browse 📰",
@@ -38,29 +39,37 @@ export const Navigationbar = () => {
         <NavBody className="">
           <NavbarLogo />
           <NavItems items={navItems} />
-          <div className="flex items-center gap-2">
-            <NavbarButton variant="secondary">Login</NavbarButton>
-            <NavbarButton variant="primary">Initiate Project</NavbarButton>
-            <Popover placement="bottom" showArrow={true} backdrop='blur' trigger>
-              <PopoverTrigger>
-                <ProfileImage
-                  src=""
-                  alt="User Profile"
-                  size={40}
-                  onClick={handleProfileClick}
-                  className="ml-2"
-                />
-              </PopoverTrigger>
-              <PopoverContent>
-                <div className='dark'>
-                  <div className="px-3 py-3 text-small font-bold dark:text-blue-50">Evan Masrur Jaber</div>
-                    <NavbarButton variant="secondary" className="gap-2 flex dark:text-white"><User2 className='dark:text-blue-50' />Profile</NavbarButton>
-                    <NavbarButton variant="secondary" className="gap-2 flex dark:text-white"><LucideNewspaper className='dark:text-blue-50' />Projects</NavbarButton>
-                    <NavbarButton variant="secondary" className="gap-2 flex text-red-500 dark:text-red-500"><LogOut className='text-red-500' />Logout</NavbarButton>
-                </div>
-              </PopoverContent>
-            </Popover>
-          </div>
+          {
+            !user ? (
+              <div className="flex items-center gap-1">
+              <NavbarButton variant='secondary' href='/login'>Log in</NavbarButton>
+              <NavbarButton variant="primary" href='/signup'>Sign in</NavbarButton>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <NavbarButton variant="primary">Initiate Project</NavbarButton>
+                <Popover placement="bottom" showArrow={true} backdrop='blur' trigger>
+                  <PopoverTrigger>
+                    <ProfileImage
+                      src=""
+                      alt="User Profile"
+                      size={40}
+                      onClick={handleProfileClick}
+                      className="ml-2"
+                    />
+                  </PopoverTrigger>
+                  <PopoverContent>
+                    <div className='dark'>
+                      <div className="px-3 py-3 text-small font-bold dark:text-blue-50">Evan Masrur Jaber</div>
+                      <NavbarButton variant="secondary" className="gap-2 flex dark:text-white"><User2 className='dark:text-blue-50' />Profile</NavbarButton>
+                      <NavbarButton variant="secondary" className="gap-2 flex dark:text-white"><LucideNewspaper className='dark:text-blue-50' />Projects</NavbarButton>
+                      <NavbarButton variant="secondary" className="gap-2 flex text-red-500 dark:text-red-500"><LogOut className='text-red-500' />Logout</NavbarButton>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            )
+          }
         </NavBody>
       </Navbar>
     </div>
