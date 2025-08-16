@@ -10,6 +10,7 @@ import {
 import { Popover, PopoverTrigger, PopoverContent } from "@heroui/popover";
 import 'lucide-react';
 import { LogOut, LucideNewspaper, User2 } from 'lucide-react';
+import { Link } from 'react-router-dom'
 
 export const Navigationbar = () => {
   const user = false
@@ -42,8 +43,8 @@ export const Navigationbar = () => {
           {
             !user ? (
               <div className="flex items-center gap-1">
-              <NavbarButton variant='secondary' href='/login'>Log in</NavbarButton>
-              <NavbarButton variant="primary" href='/signup'>Sign in</NavbarButton>
+                <NavbarButton variant='secondary' href='/login'>Log in</NavbarButton>
+                <NavbarButton variant="primary" href='/signup'>Sign in</NavbarButton>
               </div>
             ) : (
               <div className="flex items-center gap-2">

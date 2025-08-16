@@ -3,7 +3,7 @@ import Navigationbar from './shared/Navigationbar'
 
 function Home() {
   return (
-    <div>
+    <div className='h-screen bg-black'>
         <Navigationbar />
     </div>
   )

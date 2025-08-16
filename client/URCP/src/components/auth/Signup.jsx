@@ -1,5 +1,5 @@
-import React from 'react'
-import { NavbarButton, NavbarLogo } from '../ui/resizable-navbar'
+import React, {useState} from 'react'
+import {NavbarLogo } from '../ui/resizable-navbar'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import {
@@ -11,37 +11,87 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import Navigationbar from '../shared/Navigationbar'
+import { USER_API_END_POINT } from '../../utils/constant'
+import { useNavigate } from 'react-router-dom'
+import { toast } from "sonner"
+import axios from 'axios'
 
 function Signup() {
-  const handleSubmit = (e) => {
+  const [input, setInput] = useState({
+    name: "",
+    email: "",
+    password: "",
+    passwordConfirm: "",
+    department: ""
+  });
+
+  const navigate = useNavigate();
+
+  const changeEventHandler = (e) => {
+    setInput({ ...input, [e.target.name]: e.target.value });
+  };
+
+  const submitHandler = async (e) => {
     e.preventDefault()
-    // Handle form submission
+    try {
+      if (input.password !== input.passwordConfirm) {
+        toast.error("Passwords do not match");
+        return;
+      }
+      const { passwordConfirm, ...userData } = input;
+      const emailDomain = input.email.split('@')[1];
+      
+      if (emailDomain === 'g.bracu.ac.bd') {
+        userData.role = 'student';
+      } else if (emailDomain === 'bracu.ac.bd') {
+        userData.role = 'faculty';
+      } else {
+        toast.error("Use a valid BracU g-suit Email address");
+        return;
+      }
+      
+      const res = await axios.post(`${USER_API_END_POINT}/register`, userData, {
+        headers:{
+          "Content-Type": "application/json"
+        },
+        withCredentials: true
+      });
+      if (res.data.success) {
+        navigate('/login');
+        toast.success(res.data.message);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response.data.message)
+    }
   }
 
   return (
-    <div className='dark bg-black h-screen flex flex-col justify-center items-center'>
+    <div className='h-screen flex flex-col justify-center items-center'>
+      <Navigationbar />
       <div className='m-2'>
-        <div className="shadow-input mx-auto w-full max-w-md rounded-none bg-white p-4 md:rounded-2xl md:p-8 dark:bg-black">
+        <div className="mx-auto w-full flex flex-col gap-2 max-w-md rounded-none bg-white md:rounded-2xl md:py-8 md:px-3 dark:bg-black" style={{ boxShadow: "0 0 20px rgba(34, 42, 53, 0.08), 0 2px 4px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(34, 42, 53, 0.05), 0 0 6px rgba(34, 42, 53, 0.08), 0 12px 40px rgba(47, 48, 55, 0.05), 0 1px 0 rgba(255, 255, 255, 0.08) inset" }}>
           <NavbarLogo />
           <h2 className="px-3 text-xl font-bold text-neutral-800 dark:text-neutral-200">
-            Sign up to continue
+            Sign up
           </h2>
         </div>
-        <div className='m-2 flex items-center justify-center max-w-md mx-auto shadow-input w-full rounded-none bg-white px-4 md:rounded-2xl md:p-8 dark:bg-black'>
-          <form className="flex flex-col items-center" onSubmit={handleSubmit}>
-            <div className="flex w-md flex-col space-y-2 px-4">
+        <div className='m-2 flex items-center justify-center max-w-md mx-auto w-full rounded-none bg-white px-4 md:rounded-2xl md:p-8 dark:bg-black' style={{ boxShadow: "0 0 20px rgba(34, 42, 53, 0.08), 0 2px 4px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(34, 42, 53, 0.05), 0 0 6px rgba(34, 42, 53, 0.08), 0 12px 40px rgba(47, 48, 55, 0.05), 0 1px 0 rgba(255, 255, 255, 0.08) inset" }}>
+          <form className="flex flex-col items-center" onSubmit={submitHandler}>
+            <div className="flex w-md flex-col space-y-2 px-7">
               <Label htmlFor="name" className="px-4 text-sm font-medium text-gray-700">Name</Label>
-              <Input id="name" placeholder="Enter your name" type="text" />
+              <Input id="name" placeholder="Enter your name" type="text" value={input.name} name="name" onChange={changeEventHandler} />
               <Label htmlFor="email" className="px-4 text-sm font-medium text-gray-700">Email Address</Label>
-              <Input id="email" placeholder="Enter your email" type="email" />
+              <Input id="email" placeholder="Enter your email" type="email" value={input.email} name="email" onChange={changeEventHandler} />
               <Label htmlFor="password" className="px-4 text-sm font-medium text-gray-700">Set Password</Label>
-              <Input id="password" placeholder="Enter your password" type="password" />
+              <Input id="password" placeholder="Enter your password" type="password" value={input.password} name="password" onChange={changeEventHandler} />
               <Label htmlFor="retype-password" className="px-4 text-sm font-medium text-gray-700">Confirm Password</Label>
-              <Input id="retype-password" placeholder="Retype your password" type="password" />
+              <Input id="retype-password" placeholder="Retype your password" type="password" value={input.passwordConfirm} name="passwordConfirm" onChange={changeEventHandler} />
               <div className='py-3'>
                 <Label htmlFor="department" className="px-4 text-sm font-medium text-gray-700">Select your Department</Label>
                 <div className='px-1 py-3'>
-                  <Select>
+                  <Select value={input.department} onValueChange={(value) => setInput({...input, department: value})}>
                     <SelectTrigger className="max-w-md px-4 dark:text-gray-300">
                       <SelectValue placeholder="Schools and Departments" className="dark: text-white" />
                     </SelectTrigger>
@@ -62,18 +112,16 @@ function Signup() {
                   </Select>
                 </div>
               </div>
-              <NavbarButton
-                variant='gradient'
+              <button
                 type="submit"
-                className="group/btn relative block dark:bg-zinc-800 dark:from-zinc-900 dark:to-zinc-900"
+                className="group/btn relative block w-full rounded-lg bg-gradient-to-l from-blue-500 to-blue-700 px-4 py-2 font-medium text-white shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:bg-zinc-800 dark:from-zinc-900 dark:to-zinc-900 dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset] transition-all duration-300 hover:scale-103 hover:shadow-lg hover:from-blue-400 hover:to-blue-600 dark:hover:from-zinc-700 dark:hover:to-zinc-700 hover:shadow-white/10"
               >
-                Sign up &rarr;
+                <span>
+                  Sign up &rarr;
+                </span>
                 <BottomGradient />
-              </NavbarButton>
+              </button>
             </div>
-            <span className="pt-4 text-sm text-gray-500 dark:text-gray-400">
-              Already have an account? <a href="/login" className="font-medium text-blue-600 hover:underline dark:text-blue-500">Log in</a>
-            </span>
           </form>
         </div>
       </div>
