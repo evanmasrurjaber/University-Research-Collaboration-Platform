@@ -40,7 +40,7 @@ function Login() {
   }
 
   return (
-    <div className='dark bg-black h-screen flex flex-col justify-center items-center'>
+    <div className='h-screen flex flex-col justify-center items-center'>
       <Navigationbar />
       <div className='m-2'>
         <div className="mx-auto w-full flex flex-col gap-2 max-w-md rounded-none bg-white md:rounded-2xl md:py-8 md:px-3 dark:bg-black" style={{ boxShadow: "0 0 20px rgba(34, 42, 53, 0.08), 0 2px 4px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(34, 42, 53, 0.05), 0 0 6px rgba(34, 42, 53, 0.08), 0 12px 40px rgba(47, 48, 55, 0.05), 0 1px 0 rgba(255, 255, 255, 0.08) inset" }}>

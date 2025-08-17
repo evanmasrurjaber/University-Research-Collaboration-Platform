@@ -9,6 +9,7 @@ import {
 } from "motion/react";
 
 import React, { useRef, useState } from "react";
+import { useTheme } from '@/context/ThemeContext.jsx'
 
 
 export const Navbar = ({
@@ -190,12 +191,14 @@ export const MobileNavToggle = ({
 };
 
 export const NavbarLogo = () => {
+  const { theme, toggleTheme } = useTheme()
+
   return (
     <a
       href="/"
       className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-black">
       <img
-        src="/src/assets/URCP logo.png"
+        src={theme === 'dark' ? "/src/assets/URCP logo light.png" : "/src/assets/URCP logo dark.png"}
         alt="logo"
         width={30}
         height={30} />

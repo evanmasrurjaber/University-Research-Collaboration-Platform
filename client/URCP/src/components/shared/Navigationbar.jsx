@@ -11,9 +11,13 @@ import { Popover, PopoverTrigger, PopoverContent } from "@heroui/popover";
 import 'lucide-react';
 import { LogOut, LucideNewspaper, User2 } from 'lucide-react';
 import { Link } from 'react-router-dom'
+import { useTheme } from '@/context/ThemeContext.jsx'
+import { BsMoonFill } from "react-icons/bs";
+import { IoIosSunny } from "react-icons/io";
 
 export const Navigationbar = () => {
   const user = false
+  const { theme, toggleTheme } = useTheme()
   const navItems = [
     {
       name: "Browse 📰",
@@ -35,7 +39,7 @@ export const Navigationbar = () => {
 
 
   return (
-    <div className='dark'>
+    <div>
       <Navbar>
         <NavBody className="">
           <NavbarLogo />
@@ -43,11 +47,17 @@ export const Navigationbar = () => {
           {
             !user ? (
               <div className="flex items-center gap-1">
+                <NavbarButton as="button" variant="dark" className="bg-neutral-300 dark:bg-black" onClick={toggleTheme}>
+                  {theme === 'dark' ? <IoIosSunny className="text-yellow-500" /> : <BsMoonFill className="text-yellow-500" />}
+                </NavbarButton>
                 <NavbarButton variant='secondary' href='/login'>Log in</NavbarButton>
                 <NavbarButton variant="primary" href='/signup'>Sign in</NavbarButton>
               </div>
             ) : (
               <div className="flex items-center gap-2">
+                <NavbarButton as="button" variant="dark" className="" onClick={toggleTheme}>
+                  {theme === 'dark' ? <IoIosSunny className="text-yellow-500" /> : <BsMoonFill className="text-yellow-500" />}
+                </NavbarButton>
                 <NavbarButton variant="primary">Initiate Project</NavbarButton>
                 <Popover placement="bottom" showArrow={true} backdrop='blur' trigger>
                   <PopoverTrigger>
@@ -60,11 +70,11 @@ export const Navigationbar = () => {
                     />
                   </PopoverTrigger>
                   <PopoverContent>
-                    <div className='dark'>
-                      <div className="px-3 py-3 text-small font-bold dark:text-blue-50">Evan Masrur Jaber</div>
-                      <NavbarButton variant="secondary" className="gap-2 flex dark:text-white"><User2 className='dark:text-blue-50' />Profile</NavbarButton>
-                      <NavbarButton variant="secondary" className="gap-2 flex dark:text-white"><LucideNewspaper className='dark:text-blue-50' />Projects</NavbarButton>
-                      <NavbarButton variant="secondary" className="gap-2 flex text-red-500 dark:text-red-500"><LogOut className='text-red-500' />Logout</NavbarButton>
+                    <div>
+                      <div className="px-3 py-3 text-small font-bold">Evan Masrur Jaber</div>
+                      <NavbarButton variant="secondary" className="gap-2 flex"><User2 />Profile</NavbarButton>
+                      <NavbarButton variant="secondary" className="gap-2 flex"><LucideNewspaper />Projects</NavbarButton>
+                      <NavbarButton variant="secondary" className="gap-2 flex text-red-500"><LogOut className='text-red-500' />Logout</NavbarButton>
                     </div>
                   </PopoverContent>
                 </Popover>
