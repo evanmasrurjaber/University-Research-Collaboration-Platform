@@ -1,6 +1,8 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import userModel from '../models/userModel.js';
+import getDataUri from '../utils/dataUri.js';
+import cloudinary from '../utils/cloudinary.js';
 
 
 export const register = async (req, res) => {
@@ -86,7 +88,7 @@ export const login = async(req, res) => {
 
 export const logout = async (req, res) => {
     try{
-        return res.status(200).clearCookie("token").json({success: true, message: "Logged out successfully"});
+        return res.status(200).clearCookie("token").json({success: true, message: "Logged out"});
     } catch(error){
         return res.status(500).json({success: false, message: error.message });
     }
@@ -101,18 +103,73 @@ export const updateProfile = async (req, res) => {
             return res.status(404).json({success: false, message: "User not found" });
         }
 
-        const allowedFields = ['name', 'email', 'department', 'profile.bio', 'profile.profilePhotoUrl', 'profile.interests'];
+        const allowedFields = ['name', 'department', 'profile.bio', 'profile.interests', 'profile.profilePhotoUrl'];
         const updatedFields = [];
+        const file = req.file;
+
+        if (file) {
+            const oldPublicId = user.profile?.profilePhotoPublicId;
+            if (oldPublicId) {
+                try {
+                    await cloudinary.uploader.destroy(oldPublicId);
+                } catch (err) {
+                    console.error('Cloudinary destroy error:', err.message);
+                }
+            }
+
+            const fileUri = getDataUri(file);
+            const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
+                folder: 'user-profile-photos'
+            });
+            if (cloudResponse) {
+                user.profile.profilePhotoUrl = cloudResponse.secure_url;
+                user.profile.profilePhotoPublicId = cloudResponse.public_id;
+                updatedFields.push('PROFILE PHOTO');
+            }
+        }
+
+
         Object.entries(req.body).forEach(([key, value]) => {
             if (allowedFields.includes(key) && value !== undefined && value !== null) {
                 let fieldPath = key; 
+                console.log(key)
                 if (fieldPath.includes('.')) {
                     fieldPath = fieldPath.split('.');
-                    user[fieldPath[0]][fieldPath[1]] = value;
+                    const prev = user[fieldPath[0]][fieldPath[1]]
+                    if (key === 'profile.interests') {
+                        const val = JSON.parse(value);
+                        if (prev.length !== val.length) {
+                            user[fieldPath[0]][fieldPath[1]] = val;
+                            updatedFields.push(fieldPath[1].toUpperCase());
+                        } else {
+                            if (!prev.every((i, index) => i == val[index])) {
+                                user[fieldPath[0]][fieldPath[1]] = val;
+                                updatedFields.push(fieldPath[1].toUpperCase());
+                            }
+                        }
+                    } else if (key === 'profile.profilePhotoUrl') {
+                        if (value === "") {
+                            user.profile.profilePhotoUrl = "";
+                            try{
+                                cloudinary.uploader.destroy(user.profile?.profilePhotoPublicId)
+                            } catch (err) {
+                            }
+                            user.profile.profilePhotoPublicId = "";
+                            
+                        }
+                        updatedFields.push("Profile Photo");
+                    } else{
+                        if (prev !== value) {
+                            user[fieldPath[0]][fieldPath[1]] = value;
+                            updatedFields.push(fieldPath[1].toUpperCase());
+                        }
+                    }
                 } else {
-                    user[fieldPath] = value;
+                    if (user[fieldPath] !== value) {
+                        user[fieldPath] = value;
+                        updatedFields.push(fieldPath.toUpperCase());
+                    }
                 }
-                updatedFields.push(key);
             }
         });
 
@@ -134,10 +191,9 @@ export const updateProfile = async (req, res) => {
             profile: user.profile,
             preferences: user.preferences
         }
-        
         return res.status(200).json({
             success: true, 
-            message: `Profile updated successfully. Updated fields: ${updatedFields.join(', ')}`, 
+            message: `${updatedFields.slice(0, -1).join(', ')}` + `${updatedFields.length > 1 ? ' and ' : ''}` + `${updatedFields.at(-1)} updated successfully`, 
             user: userResponse
         });
     } catch (error) {
@@ -187,5 +243,26 @@ export const updateTheme = async (req, res) => {
         });
     } catch (error) {
         return res.status(500).json({success: false, message: error.message });
+    }
+};
+
+export const getProfile = async (req, res) => {
+    try {
+        const user = await userModel.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+        const userResponse = {
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            department: user.department,
+            profile: user.profile,
+            preferences: user.preferences
+        };
+        return res.status(200).json({ success: true, user: userResponse });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
     }
 };

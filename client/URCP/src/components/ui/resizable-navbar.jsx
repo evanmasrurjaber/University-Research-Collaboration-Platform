@@ -10,6 +10,7 @@ import {
 
 import React, { useRef, useState } from "react";
 import { useTheme } from '@/context/ThemeContext.jsx'
+import { useAuth } from '@/context/AuthContext.jsx'
 
 
 export const Navbar = ({
@@ -52,9 +53,9 @@ export const NavBody = ({
   return (
     <motion.div
       animate={{
-        backdropFilter:"blur(10px)",
+        backdropFilter: "blur(10px)",
         boxShadow:
-        "0 0 30px rgba(34, 42, 53, 0.1), 0 2px 2px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(34, 42, 53, 0.06), 0 0 6px rgba(34, 42, 53, 0.12), 0 18px 75px rgba(47, 48, 55, 0.08), 0 1px 0 rgba(255, 255, 255, 0.1) inset"
+          "0 0 30px rgba(34, 42, 53, 0.1), 0 2px 2px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(34, 42, 53, 0.06), 0 0 6px rgba(34, 42, 53, 0.12), 0 18px 75px rgba(47, 48, 55, 0.08), 0 1px 0 rgba(255, 255, 255, 0.1) inset"
         ,
         width: "100%",
         y: visible ? 20 : 0,
@@ -69,7 +70,7 @@ export const NavBody = ({
       }}
       className={cn(
         "relative z-[60] mx-auto hidden w-fit flex-row items-center justify-between self-start rounded-full bg-transparent px-4 py-1 lg:flex dark:bg-transparent",
-         "bg-white/20 dark:bg-neutral-950/80",
+        "bg-white/20 dark:bg-neutral-950/80",
         className
       )}>
       {children}
@@ -245,25 +246,31 @@ export const ProfileImage = ({
   onClick,
   ...props
 }) => {
+  const { user } = useAuth();
   const defaultImage = "/src/assets/default_profile_pic.PNG";
   return (
-    <div 
+    <div
       className={cn(
-        "relative cursor-pointer hover:opacity-80 transition-opacity duration-200",
+        "flex justify-center overflow-hidden items-center rounded-full w-8 bg-gray-200 dark:bg-gray-800 aspect-square relative cursor-pointer hover:opacity-80 border-2 border-gray-200 hover:border-gray-300 transition-colors duration-200",
         className
       )}
       onClick={onClick}
       {...props}
     >
-      <img
-        src={src || defaultImage}
-        width={size}
-        height={size}
-        className="rounded-full object-cover border-2 border-gray-200 hover:border-gray-300 transition-colors duration-200"
-        onError={(e) => {
-          e.target.src = defaultImage;
-        }}
-      />
+      {src ? (
+        <img
+          src={src}
+          width={size}
+          height={size}
+          className="object-cover "
+        />
+      ) : (
+        <span className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
+          {(user?.name?.[0] || "?").toUpperCase()}
+        </span>
+
+      )}
+
     </div>
   );
 };

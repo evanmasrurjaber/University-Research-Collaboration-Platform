@@ -25,9 +25,10 @@ const userSchema = new mongoose.Schema({
         required: true
     },
     profile: {
-        bio: {type: String, default: ""},
-        profilePhotoUrl: {type: String, default: ""},
-        interests: {type: [String], default: []}
+        profilePhotoUrl: { type: String },
+        profilePhotoPublicId: { type: String },
+        bio: { type: String },
+        interests: [{ type: String }]
     },
     preferences: {
         theme: {

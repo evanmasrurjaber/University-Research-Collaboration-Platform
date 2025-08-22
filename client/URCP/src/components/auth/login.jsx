@@ -7,6 +7,8 @@ import { toast } from "sonner"
 import axios from 'axios'
 import { USER_API_END_POINT } from '../../utils/constant'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@/context/AuthContext.jsx'
+import { useTheme } from '@/context/ThemeContext.jsx'
 
 function Login() {
   const [input, setInput] = useState({
@@ -19,23 +21,26 @@ function Login() {
   };
 
   const navigate = useNavigate();
+  const { setUser } = useAuth();
+  const { setTheme } = useTheme();
 
   const submitHandler = async(e) => {
     e.preventDefault()
     try {
       const res = await axios.post(`${USER_API_END_POINT}/login`, input, {
-        headers:{
-          "Content-Type": "application/json"
-        },
+        headers:{ "Content-Type": "application/json" },
         withCredentials: true
       });
       if (res.data.success) {
+        const userTheme = res.data?.user?.preferences?.theme; // expecting "dark" | "light"
+        if (userTheme) setTheme(userTheme === 'dark' ? 'dark' : 'light'); // apply immediately
+
+        setUser(res.data.user);
         navigate('/');
         toast.success(res.data.message);
       }
     } catch (error) {
-      console.error(error);
-      toast.error(error.response.data.message)
+      toast.error(error.response?.data?.message || "Login failed")
     }
   }
 

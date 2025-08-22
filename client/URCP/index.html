@@ -5,6 +5,28 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite + React</title>
+
+    <!-- Prevent white flash: set dark class + inline bg before CSS/JS load -->
+    <script>
+      (function () {
+        try {
+          var key = 'theme';
+          var stored = localStorage.getItem(key);
+          var prefers = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var isDark = stored ? stored === 'dark' : prefers;
+          var el = document.documentElement;
+          if (isDark) {
+            el.classList.add('dark');
+            el.style.background = '#0a0a0a';
+          } else {
+            el.classList.remove('dark');
+            el.style.background = '#fff';
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
   </head>
   <body>
     <div id="root"></div>
