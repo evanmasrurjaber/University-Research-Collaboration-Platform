@@ -4,6 +4,9 @@ import Signup from "./components/auth/Signup";
 import Home from "./components/Home";
 import Profile from "./components/profile/Profile.jsx"
 import UpdateProfile from "./components/profile/UpdateProfile.jsx";
+import ProjectForm from "./components/projects/ProjectForm.jsx";
+import BrowseProjects from "./components/projects/BrowseProjects.jsx";
+import ProjectDetails from "./components/projects/ProjectDetails.jsx";
 
 const appRouter = createBrowserRouter([
   {
@@ -25,6 +28,18 @@ const appRouter = createBrowserRouter([
   {
     path: "/profile/update",
     element: <UpdateProfile/>,
+  },
+  {
+    path: "/project/new",
+    element: <ProjectForm/>,
+  },
+  {
+    path: "/projects",
+    element: <BrowseProjects/>,
+  },
+  {
+    path: "/project/:id",
+    element: <ProjectDetails/>,
   }
 ])
 function App() {

@@ -573,3 +573,117 @@ export const getMyProjects = async (req, res) => {
         return res.status(500).json({ success: false, message: error.message });
     }
 };
+
+// Get pending projects (for faculty)
+export const getPendingProjects = async (req, res) => {
+  try {
+    // First check if user is authenticated at all
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required to view pending projects"
+      });
+    }
+    
+    // Get full user data from database to ensure we have the role
+    const user = await userModel.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+    
+    // Check if user is faculty
+    if (user.role !== "faculty") {
+      return res.status(403).json({
+        success: false,
+        message: `Only faculty members can view pending projects. Your role: ${user.role}`
+      });
+    }
+
+    // Get pending projects
+    const projects = await projectModel.find({
+      status: "proposed",
+      $or: [
+        { mentor: { $exists: false } },
+        { mentor: null }
+      ]
+    }).populate("initiator", "name role profile");
+
+    return res.status(200).json({
+      success: true,
+      projects
+    });
+  } catch (error) {
+    console.error("Pending projects error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while fetching pending projects"
+    });
+  }
+};
+
+// Approve project as mentor (faculty only)
+export const approveAsMentor = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // Get full user data from database
+        const user = await userModel.findById(req.user.id);
+        if (!user) {
+          return res.status(404).json({
+            success: false,
+            message: "User not found"
+          });
+        }
+        
+        // Only faculty members can approve projects
+        if (user.role !== "faculty") {
+            return res.status(403).json({
+                success: false,
+                message: "Only faculty members can approve projects as mentors"
+            });
+        }
+
+        // Find and update the project
+        const project = await projectModel.findById(id);
+        
+        if (!project) {
+            return res.status(404).json({
+                success: false,
+                message: "Project not found"
+            });
+        }
+        
+        if (project.status !== "proposed") {
+            return res.status(400).json({
+                success: false,
+                message: "Only proposed projects can be approved"
+            });
+        }
+        
+        if (project.mentor) {
+            return res.status(400).json({
+                success: false,
+                message: "This project already has a mentor"
+            });
+        }
+        
+        // Update project status and assign mentor
+        project.status = "approved";
+        project.mentor = req.user.id;
+        await project.save();
+        
+        return res.status(200).json({
+            success: true,
+            message: "Project approved successfully and you are now the mentor"
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            success: false,
+            message: "Server error while approving project"
+        });
+    }
+};

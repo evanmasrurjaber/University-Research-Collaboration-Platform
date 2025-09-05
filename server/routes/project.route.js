@@ -8,7 +8,9 @@ import {
     addProjectAttachment,
     manageParticipation,
     addComment,
-    getMyProjects
+    getMyProjects,
+    getPendingProjects,
+    approveAsMentor
 } from '../controllers/project.controller.js';
 import isAuthenticated from '../middlewares/isAuthenticated.js';
 import singleUpload from '../middlewares/multer.js';
@@ -24,10 +26,16 @@ router.route('/all').get(getAllProjects);
 // Get projects for current user
 router.route('/my').get(isAuthenticated, getMyProjects);
 
+// Get pending projects for faculty approval
+router.route('/pending').get(isAuthenticated, getPendingProjects);
+
 // Get, update a specific project
 router.route('/:id')
     .get(getProjectById)
     .put(isAuthenticated, updateProjectStatus);
+
+// Approve project and assign faculty as mentor
+router.route('/:id/approve-as-mentor').post(isAuthenticated, approveAsMentor);
 
 // Update project progress
 router.route('/:id/progress').put(isAuthenticated, updateProjectProgress);

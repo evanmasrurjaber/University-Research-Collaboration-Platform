@@ -53,7 +53,7 @@ export const NavBody = ({
   return (
     <motion.div
       animate={{
-        backdropFilter: "blur(10px)",
+        backdropFilter: "blur(5px)",
         boxShadow:
           "0 0 30px rgba(34, 42, 53, 0.1), 0 2px 2px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(34, 42, 53, 0.06), 0 0 6px rgba(34, 42, 53, 0.12), 0 18px 75px rgba(47, 48, 55, 0.08), 0 1px 0 rgba(255, 255, 255, 0.1) inset"
         ,
@@ -69,7 +69,7 @@ export const NavBody = ({
         minWidth: "600px",
       }}
       className={cn(
-        "relative z-[60] mx-auto hidden w-fit flex-row items-center justify-between self-start rounded-full bg-transparent px-4 py-1 lg:flex dark:bg-transparent",
+        "relative z-[40] mx-auto hidden w-fit flex-row items-center justify-between self-start rounded-full bg-transparent py-1 lg:flex dark:bg-transparent",
         "bg-white/20 dark:bg-neutral-950/80",
         className
       )}>
@@ -197,7 +197,7 @@ export const NavbarLogo = () => {
   return (
     <a
       href="/"
-      className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-black">
+      className="relative z-20 mr-4 flex items-center space-x-2 px-4 py-1 text-sm font-normal text-black">
       <img
         src={theme === 'dark' ? "/src/assets/URCP logo light.png" : "/src/assets/URCP logo dark.png"}
         alt="logo"

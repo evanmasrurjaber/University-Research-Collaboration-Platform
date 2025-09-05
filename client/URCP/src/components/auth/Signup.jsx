@@ -99,6 +99,7 @@ function Signup() {
                       <SelectGroup>
                         <SelectLabel>Schools and Departments</SelectLabel>
                         <SelectItem value="BRAC Business School">BRAC Business School</SelectItem>
+                        <SelectItem value="School of Data and Sciences">School of Data and Sciences</SelectItem>
                         <SelectItem value="BSRM School of Engineering">BSRM School of Engineering</SelectItem>
                         <SelectItem value="School of Law">School of Law</SelectItem>
                         <SelectItem value="School of Pharmacy">School of Pharmacy</SelectItem>

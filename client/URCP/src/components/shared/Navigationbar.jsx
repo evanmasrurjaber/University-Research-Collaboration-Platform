@@ -30,7 +30,7 @@ export const Navigationbar = () => {
   const navItems = [
     {
       name: "Browse 📰",
-      link: "#features",
+      link: "/projects",
     },
     {
       name: "People 👤",
@@ -60,11 +60,11 @@ export const Navigationbar = () => {
                 <NavbarButton variant="primary" href='/signup'>Sign up</NavbarButton>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 px-3">
                 <NavbarButton as="button" variant="dark" className="bg-neutral-300 dark:bg-black" onClick={toggleTheme}>
                   {theme === 'dark' ? <IoIosSunny className="text-yellow-500" /> : <BsMoonFill className="text-yellow-500" />}
                 </NavbarButton>
-                <NavbarButton variant="primary" href="/profile">Initiate Project</NavbarButton>
+                <NavbarButton variant="primary" href="/project/new">Initiate Project</NavbarButton>
                 <Popover placement="bottom" showArrow={true} backdrop='blur' trigger>
                   <PopoverTrigger>
                     <ProfileImage

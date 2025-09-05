@@ -146,6 +146,7 @@ export default function UpdateProfile() {
                     <SelectGroup>
                       <SelectLabel>Schools and Departments</SelectLabel>
                       <SelectItem value="BRAC Business School">BRAC Business School</SelectItem>
+                      <SelectItem value="School of Data and Sciences">School of Data and Sciences</SelectItem>
                       <SelectItem value="BSRM School of Engineering">BSRM School of Engineering</SelectItem>
                       <SelectItem value="School of Law">School of Law</SelectItem>
                       <SelectItem value="School of Pharmacy">School of Pharmacy</SelectItem>
@@ -232,7 +233,7 @@ export default function UpdateProfile() {
             <Button type="submit" disabled={saving}>
               {saving ? "Saving..." : "Save changes"}
             </Button>
-            <Button type="button" variant="secondary" className="hover:bg-gray-100" onClick={() => navigate("/profile")}>
+            <Button type="button" variant="secondary" className="hover:bg-red-300" onClick={() => navigate("/profile")}>
               Cancel
             </Button>
           </div>
