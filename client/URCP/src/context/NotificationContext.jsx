@@ -1,7 +1,8 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useAuth } from './AuthContext';
 import { toast } from 'sonner';
+import { NOTIFICATION_API_END_POINT } from '@/utils/constant';
 
 const NotificationContext = createContext();
 
@@ -13,27 +14,13 @@ export const NotificationProvider = ({ children }) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  // Fetch notifications when user logs in
-  useEffect(() => {
-    if (user) {
-      fetchNotifications();
-      fetchUnreadCount();
-      
-      // Set up interval to check for new notifications
-      const interval = setInterval(() => {
-        fetchUnreadCount();
-      }, 60000); // Check every minute
-      
-      return () => clearInterval(interval);
-    }
-  }, [user]);
-
-  const fetchNotifications = async () => {
+  // Memoize the functions with useCallback to prevent infinite loops
+  const fetchNotifications = useCallback(async () => {
     if (!user) return;
     
     try {
       setLoading(true);
-      const response = await axios.get('/api/notifications', { withCredentials: true });
+      const response = await axios.get(`${NOTIFICATION_API_END_POINT}`, { withCredentials: true });
       
       if (response.data.success) {
         setNotifications(response.data.notifications);
@@ -43,13 +30,13 @@ export const NotificationProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
-  const fetchUnreadCount = async () => {
+  const fetchUnreadCount = useCallback(async () => {
     if (!user) return;
     
     try {
-      const response = await axios.get('/api/notifications/unread-count', { withCredentials: true });
+      const response = await axios.get(`${NOTIFICATION_API_END_POINT}/unread-count`, { withCredentials: true });
       
       if (response.data.success) {
         setUnreadCount(response.data.count);
@@ -57,12 +44,12 @@ export const NotificationProvider = ({ children }) => {
     } catch (error) {
       console.error('Error fetching unread count:', error);
     }
-  };
+  }, [user]);
 
-  const markAsRead = async (notificationId) => {
+  const markAsRead = useCallback(async (notificationId) => {
     try {
       const response = await axios.put(
-        `/api/notifications/${notificationId}/read`, 
+        `${NOTIFICATION_API_END_POINT}/${notificationId}/read`, 
         {}, 
         { withCredentials: true }
       );
@@ -82,12 +69,12 @@ export const NotificationProvider = ({ children }) => {
       console.error('Error marking notification as read:', error);
       toast.error('Failed to mark notification as read');
     }
-  };
+  }, []);
 
-  const markAllAsRead = async () => {
+  const markAllAsRead = useCallback(async () => {
     try {
       const response = await axios.put(
-        '/api/notifications/mark-all-read', 
+        `${NOTIFICATION_API_END_POINT}/mark-all-read`, 
         {}, 
         { withCredentials: true }
       );
@@ -107,7 +94,22 @@ export const NotificationProvider = ({ children }) => {
       console.error('Error marking all notifications as read:', error);
       toast.error('Failed to mark all notifications as read');
     }
-  };
+  }, []);
+
+  // Fetch notifications when user logs in
+  useEffect(() => {
+    if (user) {
+      fetchNotifications();
+      fetchUnreadCount();
+      
+      // Set up interval to check for new notifications
+      const interval = setInterval(() => {
+        fetchUnreadCount();
+      }, 60000); // Check every minute
+      
+      return () => clearInterval(interval);
+    }
+  }, [user, fetchNotifications, fetchUnreadCount]);
 
   const value = {
     notifications,
