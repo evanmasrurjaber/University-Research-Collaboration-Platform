@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import connectDB from "./config/mongodb.js";
 import userRoutes from "./routes/user.route.js";
 import projectRoutes from "./routes/project.route.js";
+import notificationRoutes from './routes/notification.route.js';
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -20,6 +21,7 @@ app.use(cors({origin: 'http://localhost:5173',
 }));
 app.use("/api/user", userRoutes);
 app.use("/api/project", projectRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 app.get('/', (req, res) => res.send('API working'))
 

@@ -2,6 +2,7 @@ import projectModel from '../models/projectModel.js';
 import userModel from '../models/userModel.js';
 import getDataUri from '../utils/dataUri.js';
 import cloudinary from '../utils/cloudinary.js';
+import { createNotification } from './notification.controller.js';
 
 // Create a new project proposal
 export const createProject = async (req, res) => {
@@ -184,6 +185,39 @@ export const updateProjectStatus = async (req, res) => {
             }
         }
         
+        // Add notification when project is approved
+        if (status === 'approved' && project.status !== 'approved') {
+            // Notify the initiator that their project was approved
+            await createNotification(
+                project.initiator.toString(),
+                'project_approved',
+                `Your project "${project.title}" has been approved!`,
+                project._id,
+                userId
+            );
+        }
+        
+        // Add notification when project is completed
+        if (status === 'finished' && project.status !== 'finished') {
+            // Get all participants
+            const participantIds = project.participants
+                .filter(p => p.status === 'accepted')
+                .map(p => p.user.toString());
+                
+            // Create notifications for all participants
+            for (const participantId of participantIds) {
+                if (participantId !== userId) { // Don't notify the user making the update
+                    await createNotification(
+                        participantId,
+                        'project_completed',
+                        `The project "${project.title}" has been marked as completed!`,
+                        project._id,
+                        userId
+                    );
+                }
+            }
+        }
+        
         project.status = status;
         await project.save();
         
@@ -344,6 +378,28 @@ export const manageParticipation = async (req, res) => {
                 });
                 
                 await project.save();
+                
+                // Add notification for project initiator and mentor
+                const notifyIds = [project.initiator.toString()];
+                if (project.mentor) {
+                    notifyIds.push(project.mentor.toString());
+                }
+                
+                // Remove duplicates in case initiator is also mentor
+                const uniqueNotifyIds = [...new Set(notifyIds)];
+                
+                for (const notifyId of uniqueNotifyIds) {
+                    if (notifyId !== currentUserId) { // Don't notify the requester
+                        await createNotification(
+                            notifyId,
+                            'new_role_request',
+                            `${targetUser.name} has requested to join your project "${project.title}" as ${role}`,
+                            project._id,
+                            currentUserId
+                        );
+                    }
+                }
+                
                 return res.status(200).json({
                     success: true,
                     message: "Role request submitted successfully"
@@ -425,6 +481,22 @@ export const manageParticipation = async (req, res) => {
                 
                 // Update status to accepted
                 project.participants[participantIndex].status = 'accepted';
+                
+                // Determine who is being notified
+                const notifyUserId = (isInitiator || isMentor) ? targetUserId : currentUserId;
+                const notifierUserId = (isInitiator || isMentor) ? currentUserId : participant.user;
+                
+                // Create notification for user whose request was accepted
+                await createNotification(
+                    notifyUserId,
+                    'role_request_approved',
+                    participant.status === 'invited' 
+                        ? `You accepted the invitation to join "${project.title}" as ${participant.role}`
+                        : `Your request to join "${project.title}" as ${participant.role} has been approved`,
+                    project._id,
+                    notifierUserId
+                );
+                
                 await project.save();
                 
                 return res.status(200).json({
@@ -465,6 +537,22 @@ export const manageParticipation = async (req, res) => {
                 
                 // Update status to rejected or remove
                 project.participants[participantIndex].status = 'rejected';
+                
+                // Determine who is being notified
+                const notifyUserId = (isInitiator || isMentor) ? targetUserId : currentUserId;
+                const notifierUserId = (isInitiator || isMentor) ? currentUserId : participant.user;
+                
+                // Create notification for user whose request was rejected
+                if (participant.status === 'requested') {
+                    await createNotification(
+                        notifyUserId,
+                        'role_request_rejected',
+                        `Your request to join "${project.title}" as ${participant.role} has been declined`,
+                        project._id,
+                        notifierUserId
+                    );
+                }
+                
                 await project.save();
                 
                 return res.status(200).json({
@@ -520,6 +608,18 @@ export const addComment = async (req, res) => {
                 text,
                 createdAt: new Date()
             });
+            
+            // Notify the original commenter
+            const parentComment = project.comments.find(c => c._id.toString() === parentCommentId);
+            if (parentComment && parentComment.user.toString() !== userId) {
+                await createNotification(
+                    parentComment.user.toString(),
+                    'new_reply',
+                    `Someone replied to your comment on "${project.title}"`,
+                    project._id,
+                    userId
+                );
+            }
         } else {
             // This is a new top-level comment
             project.comments.push({
@@ -528,6 +628,25 @@ export const addComment = async (req, res) => {
                 createdAt: new Date(),
                 replies: []
             });
+            
+            // Notify project initiator and mentor
+            const notifyIds = [project.initiator.toString()];
+            if (project.mentor) {
+                notifyIds.push(project.mentor.toString());
+            }
+            
+            // Remove duplicates and don't notify the commenter
+            const uniqueNotifyIds = [...new Set(notifyIds)].filter(id => id !== userId);
+            
+            for (const notifyId of uniqueNotifyIds) {
+                await createNotification(
+                    notifyId,
+                    'new_comment',
+                    `Someone commented on your project "${project.title}"`,
+                    project._id,
+                    userId
+                );
+            }
         }
         
         await project.save();
@@ -674,6 +793,15 @@ export const approveAsMentor = async (req, res) => {
         project.status = "approved";
         project.mentor = req.user.id;
         await project.save();
+        
+        // Notify the project initiator
+        await createNotification(
+            project.initiator.toString(),
+            'project_approved',
+            `Your project "${project.title}" has been approved and has a mentor assigned!`,
+            project._id,
+            req.user.id
+        );
         
         return res.status(200).json({
             success: true,

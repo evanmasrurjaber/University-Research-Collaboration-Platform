@@ -15,14 +15,15 @@ import { useAuth } from '@/context/AuthContext.jsx'
 import { BsMoonFill } from "react-icons/bs";
 import { IoIosSunny } from "react-icons/io";
 import { useNavigate } from 'react-router-dom';
+import NotificationBell from './NotificationBell';
 
 export const Navigationbar = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const handleLogout = async () => {
-    try{
+    try {
       await logout();
-    } finally{
+    } finally {
       navigate('/')
     }
   };
@@ -37,8 +38,8 @@ export const Navigationbar = () => {
       link: "#pricing",
     },
     {
-      name: "Search 🔍",
-      link: "#contact",
+      name: "Stories 📖",
+      link: "#stories",
     },
   ];
 
@@ -56,8 +57,10 @@ export const Navigationbar = () => {
                 <NavbarButton as="button" variant="dark" className="bg-neutral-300 dark:bg-black" onClick={toggleTheme}>
                   {theme === 'dark' ? <IoIosSunny className="text-yellow-500" /> : <BsMoonFill className="text-yellow-500" />}
                 </NavbarButton>
-                <NavbarButton variant='secondary' href='/login'>Log in</NavbarButton>
-                <NavbarButton variant="primary" href='/signup'>Sign up</NavbarButton>
+                <div className="flex items-center px-2">
+                  <NavbarButton variant='secondary' href='/login'>Log in</NavbarButton>
+                  <NavbarButton variant="primary" href='/signup'>Sign up</NavbarButton>
+                </div>
               </div>
             ) : (
               <div className="flex items-center gap-2 px-3">
@@ -65,6 +68,7 @@ export const Navigationbar = () => {
                   {theme === 'dark' ? <IoIosSunny className="text-yellow-500" /> : <BsMoonFill className="text-yellow-500" />}
                 </NavbarButton>
                 <NavbarButton variant="primary" href="/project/new">Initiate Project</NavbarButton>
+                {user && <NotificationBell />}
                 <Popover placement="bottom" showArrow={true} backdrop='blur' trigger>
                   <PopoverTrigger>
                     <ProfileImage

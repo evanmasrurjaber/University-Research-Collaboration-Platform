@@ -7,6 +7,8 @@ import UpdateProfile from "./components/profile/UpdateProfile.jsx";
 import ProjectForm from "./components/projects/ProjectForm.jsx";
 import BrowseProjects from "./components/projects/BrowseProjects.jsx";
 import ProjectDetails from "./components/projects/ProjectDetails.jsx";
+import { NotificationProvider } from './context/NotificationContext';
+import NotificationsPage from './components/notifications/NotificationsPage';
 
 const appRouter = createBrowserRouter([
   {
@@ -40,12 +42,18 @@ const appRouter = createBrowserRouter([
   {
     path: "/project/:id",
     element: <ProjectDetails/>,
+  },
+  {
+    path: "/notifications",
+    element: <NotificationsPage />,
   }
 ])
 function App() {
   return (
     <>
-      <RouterProvider router = {appRouter} />
+      <NotificationProvider>
+        <RouterProvider router = {appRouter} />
+      </NotificationProvider>
     </>
   )
 }
