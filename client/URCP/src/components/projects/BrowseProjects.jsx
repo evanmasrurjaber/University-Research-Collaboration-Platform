@@ -24,7 +24,7 @@ import { toast } from "sonner";
 function BrowseProjects() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  
+
   const [projects, setProjects] = useState([]);
   const [filteredProjects, setFilteredProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,15 +34,15 @@ function BrowseProjects() {
     search: "",
     selectedTag: ""
   });
-  
+
   const [allTags, setAllTags] = useState([]);
   const [pendingProjects, setPendingProjects] = useState([]);
-  
+
   useEffect(() => {
     // Only make requests when user data is fully loaded
+
+    fetchProjects();
     if (user) {
-      fetchProjects();
-      
       // Add a delay to ensure auth tokens are properly set
       if (user.role === "faculty") {
         setTimeout(() => {
@@ -51,18 +51,18 @@ function BrowseProjects() {
       }
     }
   }, [user]);
-  
+
   useEffect(() => {
     applyFilters();
   }, [projects, filters]);
-  
+
   const fetchProjects = async () => {
     try {
       setLoading(true);
       const response = await axios.get(`${PROJECT_API_END_POINT}/all`);
       if (response.data.success) {
         setProjects(response.data.projects);
-        
+
         // Extract all unique tags from projects
         const tagsSet = new Set();
         response.data.projects.forEach(project => {
@@ -79,22 +79,22 @@ function BrowseProjects() {
       setLoading(false);
     }
   };
-  
+
   const fetchPendingProjects = async () => {
     try {
       setLoading(true);
-      
+
       if (!user || user.role !== 'faculty') {
         toast.error("Only faculty members can access this feature");
         return;
       }
-      
+
       console.log("Fetching pending projects as faculty:", user.role);
-      
+
       // Check authentication state in cookies instead of localStorage
       const response = await axios.get(
-        `${PROJECT_API_END_POINT}/pending`, 
-        { 
+        `${PROJECT_API_END_POINT}/pending`,
+        {
           withCredentials: true,
           headers: {
             // Pass cookies and credentials properly
@@ -103,7 +103,7 @@ function BrowseProjects() {
           }
         }
       );
-      
+
       if (response.data.success) {
         setPendingProjects(response.data.projects);
       } else {
@@ -119,55 +119,55 @@ function BrowseProjects() {
       setLoading(false);
     }
   };
-  
+
   const applyFilters = () => {
     let result = [...projects];
-    
+
     if (filters.status && filters.status !== "all") {
       result = result.filter(project => project.status === filters.status);
     }
-    
+
     if (filters.department && filters.department !== "all") {
       result = result.filter(project => project.department === filters.department);
     }
-    
+
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
-      result = result.filter(project => 
-        project.title.toLowerCase().includes(searchLower) || 
+      result = result.filter(project =>
+        project.title.toLowerCase().includes(searchLower) ||
         project.description.toLowerCase().includes(searchLower)
       );
     }
-    
+
     if (filters.selectedTag) {
-      result = result.filter(project => 
+      result = result.filter(project =>
         project.tags && project.tags.includes(filters.selectedTag)
       );
     }
-    
+
     setFilteredProjects(result);
   };
-  
+
   const handleSearchChange = (e) => {
-    setFilters({...filters, search: e.target.value});
+    setFilters({ ...filters, search: e.target.value });
   };
-  
+
   const handleStatusChange = (value) => {
-    setFilters({...filters, status: value});
+    setFilters({ ...filters, status: value });
   };
-  
+
   const handleDepartmentChange = (value) => {
-    setFilters({...filters, department: value});
+    setFilters({ ...filters, department: value });
   };
-  
+
   const handleTagClick = (tag) => {
-    setFilters({...filters, selectedTag: filters.selectedTag === tag ? "" : tag});
+    setFilters({ ...filters, selectedTag: filters.selectedTag === tag ? "" : tag });
   };
-  
+
   const handleCreateProject = () => {
     navigate("/project/new");
   };
-  
+
   const clearFilters = () => {
     setFilters({
       status: "all",
@@ -184,7 +184,7 @@ function BrowseProjects() {
         {},
         { withCredentials: true }
       );
-      
+
       if (response.data.success) {
         toast.success("Successfully approved project and assigned as mentor");
         fetchPendingProjects();
@@ -214,7 +214,7 @@ function BrowseProjects() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navigationbar />
-      
+
       <div className="max-w-6xl mx-auto mt-28 px-4 w-full">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
           <div>
@@ -223,9 +223,9 @@ function BrowseProjects() {
               Browse and discover research projects across departments
             </p>
           </div>
-          
+
           {user && (
-            <Button 
+            <Button
               onClick={handleCreateProject}
               className="mt-4 md:mt-0 bg-gradient-to-l from-blue-500 to-blue-700 group/btn relative shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] hover:scale-103 hover:shadow-lg hover:from-blue-400 hover:to-blue-600"
             >
@@ -234,7 +234,7 @@ function BrowseProjects() {
             </Button>
           )}
         </div>
-        
+
         <div className="rounded-2xl p-6 bg-white dark:bg-black mb-8" style={{ boxShadow: "0 0 20px rgba(34, 42, 53, 0.08), 0 2px 4px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(34, 42, 53, 0.05), 0 0 6px rgba(34, 42, 53, 0.08), 0 12px 40px rgba(47, 48, 55, 0.05), 0 1px 0 rgba(255, 255, 255, 0.08) inset" }}>
           <div className="flex flex-col lg:flex-row gap-4 mb-6">
             <div className="flex-1">
@@ -245,7 +245,7 @@ function BrowseProjects() {
                 className="w-full"
               />
             </div>
-            
+
             <div className="flex flex-col sm:flex-row gap-4">
               <Select value={filters.status} onValueChange={handleStatusChange}>
                 <SelectTrigger className="w-full sm:w-[180px]">
@@ -260,7 +260,7 @@ function BrowseProjects() {
                   <SelectItem value="finished">Finished</SelectItem>
                 </SelectContent>
               </Select>
-              
+
               <Select value={filters.department} onValueChange={handleDepartmentChange}>
                 <SelectTrigger className="w-full sm:w-[220px]">
                   <SelectValue placeholder="Filter by department" />
@@ -282,9 +282,9 @@ function BrowseProjects() {
                   </SelectGroup>
                 </SelectContent>
               </Select>
-              
-              <Button 
-                variant="outline" 
+
+              <Button
+                variant="outline"
                 onClick={clearFilters}
                 className="whitespace-nowrap"
               >
@@ -292,7 +292,7 @@ function BrowseProjects() {
               </Button>
             </div>
           </div>
-          
+
           <Tabs defaultValue="all" className="w-full">
             <TabsList className="mb-6">
               <TabsTrigger className="p-3" value="all">All Projects</TabsTrigger>
@@ -301,7 +301,7 @@ function BrowseProjects() {
                 <TabsTrigger className="p-3" value="pending">Pending Approval</TabsTrigger>
               )}
             </TabsList>
-            
+
             <TabsContent value="all">
               {loading ? (
                 <div className="flex justify-center items-center py-20">
@@ -320,14 +320,14 @@ function BrowseProjects() {
                 </div>
               )}
             </TabsContent>
-            
+
             <TabsContent value="tags">
               <div className="mb-6">
                 <h3 className="font-medium mb-3">Filter by Tags</h3>
                 <div className="flex flex-wrap gap-2">
                   {allTags.map((tag, index) => (
-                    <Badge 
-                      key={index} 
+                    <Badge
+                      key={index}
                       variant={filters.selectedTag === tag ? "default" : "outline"}
                       className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-1 text-xs"
                       onClick={() => handleTagClick(tag)}
@@ -337,9 +337,9 @@ function BrowseProjects() {
                   ))}
                 </div>
               </div>
-              
+
               <Separator className="my-6" />
-              
+
               {loading ? (
                 <div className="flex justify-center items-center py-20">
                   <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -361,7 +361,7 @@ function BrowseProjects() {
             {user && user.role === "faculty" && (
               <TabsContent value="pending">
                 <h3 className="font-medium mb-4">Projects Pending Faculty Approval</h3>
-                
+
                 {loading ? (
                   <div className="flex justify-center items-center py-20">
                     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -378,16 +378,16 @@ function BrowseProjects() {
                           <Badge className="mt-2">{project.department}</Badge>
                           <p className="mt-3 text-sm line-clamp-3">{project.description}</p>
                         </div>
-                        
+
                         <div className="flex flex-wrap gap-2 mt-3 mb-4">
                           {project.tags?.map((tag, idx) => (
                             <Badge key={idx} variant="outline" className="text-xs">{tag}</Badge>
                           ))}
                         </div>
-                        
+
                         <div className="flex justify-between mt-4 items-center">
-                          <Button 
-                            variant="outline" 
+                          <Button
+                            variant="outline"
                             size="sm"
                             onClick={() => navigate(`/project/${project._id}`)}
                           >
@@ -395,7 +395,7 @@ function BrowseProjects() {
                           </Button>
                           {user.role === 'faculty' && user._id !== project.initiator?._id && (
                             <div className="flex gap-3">
-                              <Button 
+                              <Button
                                 onClick={() => handleApproveAsMentor(project._id)}
                                 size="sm"
                                 className="bg-gradient-to-l from-blue-500 to-blue-700 group/btn relative shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] hover:scale-103 hover:shadow-lg hover:from-blue-400 hover:to-blue-600"

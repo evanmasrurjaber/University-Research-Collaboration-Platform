@@ -11,7 +11,8 @@ import {
     getMyProjects,
     getPendingProjects,
     approveAsMentor,
-    rejectProjectProposal
+    rejectProjectProposal,
+    updateProjectDetails
 } from '../controllers/project.controller.js';
 import isAuthenticated from '../middlewares/isAuthenticated.js';
 import singleUpload from '../middlewares/multer.js';
@@ -33,7 +34,7 @@ router.route('/pending').get(isAuthenticated, getPendingProjects);
 // Get, update a specific project
 router.route('/:id')
     .get(getProjectById)
-    .put(isAuthenticated, updateProjectStatus);
+    .put(isAuthenticated, updateProjectDetails);
 
 // Approve project and assign faculty as mentor
 router.route('/:id/approve-as-mentor').post(isAuthenticated, approveAsMentor);

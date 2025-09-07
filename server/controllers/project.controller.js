@@ -885,3 +885,63 @@ export const rejectProjectProposal = async (req, res) => {
 // export const rejectProjectProposal = async (req, res) => {
 //   ... set project.status = 'rejected'; await project.save(); createNotification(...);
 // };
+export const updateProjectDetails = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+        const { title, description, department, openRoles, tags } = req.body;
+
+        const project = await projectModel.findById(id);
+        if (!project) {
+            return res.status(404).json({ success: false, message: "Project not found" });
+        }
+
+        const isInitiator = project.initiator.toString() === userId;
+        const isMentor = project.mentor && project.mentor.toString() === userId;
+
+        if (!isInitiator && !isMentor) {
+            return res.status(403).json({ success: false, message: "Not authorized to edit this project" });
+        }
+
+        if (title) project.title = title;
+        if (description) project.description = description;
+        if (department) project.department = department;
+
+        // Handle roles (filter empty)
+        if (openRoles) {
+            let roles = openRoles;
+            if (typeof roles === 'string') {
+                try { roles = JSON.parse(roles); } catch { roles = []; }
+            }
+            if (Array.isArray(roles)) {
+                project.openRoles = roles
+                    .filter(r => r && r.title && r.description)
+                    .map(r => ({ title: r.title.trim(), description: r.description.trim() }));
+            }
+        }
+
+        if (tags) {
+            let projectTags = tags;
+            if (typeof projectTags === 'string') {
+                try { projectTags = JSON.parse(projectTags); } catch { projectTags = []; }
+            }
+            if (Array.isArray(projectTags)) {
+                project.tags = projectTags.filter(t => typeof t === 'string' && t.trim() !== '').map(t => t.trim());
+            }
+        }
+
+        await project.save();
+
+        const populated = await projectModel.findById(project._id)
+            .populate('initiator', 'name email')
+            .populate('mentor', 'name email');
+
+        return res.status(200).json({
+            success: true,
+            message: "Project updated successfully",
+            project: populated
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};

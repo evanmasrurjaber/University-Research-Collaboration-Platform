@@ -10,6 +10,7 @@ import ProjectDetails from "./components/projects/ProjectDetails.jsx";
 import { NotificationProvider } from './context/NotificationContext';
 import NotificationsPage from './components/notifications/NotificationsPage';
 import UserProfile from './components/users/UserProfile';
+import ProjectUpdate from './components/projects/ProjectUpdate.jsx';
 
 const appRouter = createBrowserRouter([
   {
@@ -51,6 +52,10 @@ const appRouter = createBrowserRouter([
   {
     path: "/users/:id",
     element: <UserProfile />,
+  },
+  {
+    path: "/project/:id/edit",
+    element: <ProjectUpdate />,
   }
 ])
 function App() {

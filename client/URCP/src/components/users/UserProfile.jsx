@@ -6,7 +6,7 @@ import { USER_API_END_POINT } from '@/utils/constant';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Pencil } from 'lucide-react';
 
 const statusColor = (s) => {
   switch (s) {
@@ -68,7 +68,7 @@ function UserProfile() {
 
   const { user, projects } = data;
 
-  const renderProjectList = (list, emptyMsg) => {
+  const renderProjectList = (list, emptyMsg, editable = false) => {
     if (!list || list.length === 0) {
       return (
         <div className="text-sm text-gray-500 dark:text-gray-400 border border-dashed border-gray-300 dark:border-gray-700 p-4 rounded-lg">
@@ -85,11 +85,26 @@ function UserProfile() {
             tabIndex={0}
             onClick={() => navigate(`/project/${p._id}`)}
             onKeyDown={(e) => e.key === 'Enter' && navigate(`/project/${p._id}`)}
-            className="p-4 rounded-lg border border-gray-200 dark:border-gray-800 flex flex-col gap-1 hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="p-4 rounded-lg border border-gray-200 dark:border-gray-800 flex flex-col gap-1 hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer relative"
           >
             <div className="flex items-center justify-between">
               <span className="font-medium">{p.title}</span>
-              <Badge className={`${statusColor(p.status)} capitalize`}>{p.status.replace('_', ' ')}</Badge>
+              <div className="flex items-center gap-2">
+                <Badge className={`${statusColor(p.status)} capitalize`}>{p.status.replace('_', ' ')}</Badge>
+                {editable && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/project/${p._id}/edit`);
+                    }}
+                    className="p-1 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-md"
+                    title="Edit Project"
+                  >
+                    <Pencil size={16} />
+                  </button>
+                )}
+              </div>
             </div>
             <div className="text-xs text-gray-500 dark:text-gray-400 flex gap-4">
               <span>Created: {formatDate(p.createdAt)}</span>
@@ -160,7 +175,7 @@ function UserProfile() {
         <div className="space-y-10 mb-20">
           <section>
             <h2 className="text-lg font-medium mb-4">Initiated Projects</h2>
-            {renderProjectList(projects.initiated, "No initiated projects")}
+            {renderProjectList(projects.initiated, "No initiated projects", true)}
           </section>
           <section>
             <h2 className="text-lg font-medium mb-4">Mentoring</h2>
