@@ -82,8 +82,17 @@ export const Navigationbar = () => {
                     <div>
                       <div className="px-3 py-3 text-small font-bold">{user?.name}</div>
                       <NavbarButton variant="secondary" className="gap-2 flex" href="/profile"><User2 />Profile</NavbarButton>
-                      <NavbarButton variant="secondary" className="gap-2 flex"><LucideNewspaper />Projects</NavbarButton>
-                      <NavbarButton as="button" onClick={handleLogout} variant="secondary" className="gap-2 flex text-red-500 dark:text-red-500"><LogOut className='text-red-500' />Logout</NavbarButton>
+                      {/* Updated Projects button to go to the user's profile (project list) */}
+                      <NavbarButton
+                        variant="secondary"
+                        className="gap-2 flex"
+                        href={`/users/${user?._id}`}
+                      >
+                        <LucideNewspaper />Projects
+                      </NavbarButton>
+                      <NavbarButton as="button" onClick={handleLogout} variant="secondary" className="gap-2 flex text-red-500 dark:text-red-500">
+                        <LogOut className='text-red-500' />Logout
+                      </NavbarButton>
                     </div>
                   </PopoverContent>
                 </Popover>

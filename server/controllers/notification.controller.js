@@ -10,11 +10,21 @@ export const createNotification = async (recipientId, type, message, projectId =
             project: projectId,
             fromUser: fromUserId
         });
-        
         await notification.save();
+        console.log("[createNotification] Saved", {
+            recipientId,
+            type,
+            projectId,
+            fromUserId,
+            _id: notification._id
+        });
         return notification;
     } catch (error) {
-        console.error("Error creating notification:", error);
+        console.error("[createNotification] ERROR:", {
+            message: error.message,
+            name: error.name,
+            errors: error.errors
+        });
         return null;
     }
 };

@@ -195,6 +195,22 @@ function BrowseProjects() {
     }
   };
 
+  const handleRejectProject = async (projectId) => {
+    if (!window.confirm("Reject this proposal? This will delete it permanently.")) return;
+    try {
+      const response = await axios.delete(
+        `${PROJECT_API_END_POINT}/${projectId}/reject`,
+        { withCredentials: true }
+      );
+      if (response.data.success) {
+        toast.success(response.data.message);
+        fetchPendingProjects();
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Error rejecting project");
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navigationbar />
@@ -369,7 +385,7 @@ function BrowseProjects() {
                           ))}
                         </div>
                         
-                        <div className="flex justify-between mt-4">
+                        <div className="flex justify-between mt-4 items-center">
                           <Button 
                             variant="outline" 
                             size="sm"
@@ -377,17 +393,24 @@ function BrowseProjects() {
                           >
                             View Details
                           </Button>
-                          
-                          {/* Only show approval button if user is faculty AND not the initiator */}
                           {user.role === 'faculty' && user._id !== project.initiator?._id && (
-                            <Button 
-                              onClick={() => handleApproveAsMentor(project._id)}
-                              size="sm"
-                              className="bg-gradient-to-l from-blue-500 to-blue-700 group/btn relative shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] hover:scale-103 hover:shadow-lg hover:from-blue-400 hover:to-blue-600"
-                            >
-                              Approve & Mentor
-                              <BottomGradient />
-                            </Button>
+                            <div className="flex gap-3">
+                              <Button 
+                                onClick={() => handleApproveAsMentor(project._id)}
+                                size="sm"
+                                className="bg-gradient-to-l from-blue-500 to-blue-700 group/btn relative shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] hover:scale-103 hover:shadow-lg hover:from-blue-400 hover:to-blue-600"
+                              >
+                                Approve
+                                <BottomGradient />
+                              </Button>
+                              <Button
+                                size="sm"
+                                className="bg-red-600 hover:bg-red-500"
+                                onClick={() => handleRejectProject(project._id)}
+                              >
+                                Reject
+                              </Button>
+                            </div>
                           )}
                         </div>
                       </div>

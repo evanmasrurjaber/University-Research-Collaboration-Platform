@@ -9,14 +9,15 @@ const notificationSchema = new mongoose.Schema({
     type: {
         type: String,
         enum: [
-            "project_approved", 
-            "role_request_approved", 
-            "role_request_rejected", 
-            "new_role_request", 
-            "new_comment", 
-            "new_reply",
+            "project_approved",
+            "project_rejected",
             "project_update",
-            "project_completed"
+            "project_completed",
+            "role_request_approved",
+            "role_request_rejected",
+            "new_role_request",
+            "new_comment",
+            "new_reply"
         ],
         required: true
     },

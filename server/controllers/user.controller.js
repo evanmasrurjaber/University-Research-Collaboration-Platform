@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import userModel from '../models/userModel.js';
+import projectModel from '../models/projectModel.js';
 import getDataUri from '../utils/dataUri.js';
 import cloudinary from '../utils/cloudinary.js';
 
@@ -265,4 +266,49 @@ export const getProfile = async (req, res) => {
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
     }
+};
+
+export const getUserProfile = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const user = await userModel.findById(id)
+      .select('name email role department profile.profilePhotoUrl createdAt');
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const initiatedProjects = await projectModel.find({ initiator: id })
+      .select('title status progressPercentage createdAt mentor')
+      .populate('mentor', 'name profile.profilePhotoUrl')
+      .sort({ createdAt: -1 });
+
+    const mentoringProjects = await projectModel.find({ mentor: id })
+      .select('title status progressPercentage createdAt initiator')
+      .populate('initiator', 'name profile.profilePhotoUrl')
+      .sort({ createdAt: -1 });
+
+    const participatingProjects = await projectModel.find({
+      participants: { $elemMatch: { user: id, status: 'accepted' } },
+      initiator: { $ne: id },
+      mentor: { $ne: id }
+    })
+      .select('title status progressPercentage createdAt initiator mentor')
+      .populate('initiator', 'name profile.profilePhotoUrl')
+      .populate('mentor', 'name profile.profilePhotoUrl')
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      user,
+      projects: {
+        initiated: initiatedProjects,
+        mentoring: mentoringProjects,
+        participating: participatingProjects
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
 };

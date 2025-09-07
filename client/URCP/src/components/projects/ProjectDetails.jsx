@@ -17,14 +17,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { 
-  Calendar, 
-  MessageSquare, 
-  FileText, 
-  Users, 
-  UserPlus, 
-  AlertCircle, 
-  CheckCircle, 
+import {
+  Calendar,
+  MessageSquare,
+  FileText,
+  Users,
+  UserPlus,
+  AlertCircle,
+  CheckCircle,
   XCircle,
   Paperclip,
   Clock,
@@ -35,7 +35,7 @@ function ProjectDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  
+
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [commentText, setCommentText] = useState("");
@@ -45,11 +45,11 @@ function ProjectDetails() {
   const [participationStatus, setParticipationStatus] = useState(null);
   // Add a new state for active tab
   const [activeTab, setActiveTab] = useState("details");
-  
+
   useEffect(() => {
     fetchProjectDetails();
   }, [id]);
-  
+
   useEffect(() => {
     if (project && user) {
       // Check if user is already a participant
@@ -86,7 +86,7 @@ function ProjectDetails() {
         { status },
         { withCredentials: true }
       );
-      
+
       if (response.data.success) {
         toast.success(response.data.message);
         fetchProjectDetails();
@@ -104,7 +104,7 @@ function ProjectDetails() {
         { progressPercentage: progress },
         { withCredentials: true }
       );
-      
+
       if (response.data.success) {
         toast.success(response.data.message);
         fetchProjectDetails();
@@ -118,14 +118,14 @@ function ProjectDetails() {
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
     if (!commentText.trim()) return;
-    
+
     try {
       const response = await axios.post(
         `${PROJECT_API_END_POINT}/${id}/comment`,
         { text: commentText },
         { withCredentials: true }
       );
-      
+
       if (response.data.success) {
         setCommentText("");
         toast.success(response.data.message);
@@ -139,20 +139,20 @@ function ProjectDetails() {
 
   const handleReplySubmit = async (commentId) => {
     if (!replyText[commentId]?.trim()) return;
-    
+
     try {
       const response = await axios.post(
         `${PROJECT_API_END_POINT}/${id}/comment`,
-        { 
+        {
           text: replyText[commentId],
-          parentCommentId: commentId 
+          parentCommentId: commentId
         },
         { withCredentials: true }
       );
-      
+
       if (response.data.success) {
-        setReplyText({...replyText, [commentId]: ""});
-        setShowReplyInput({...showReplyInput, [commentId]: false});
+        setReplyText({ ...replyText, [commentId]: "" });
+        setShowReplyInput({ ...showReplyInput, [commentId]: false });
         toast.success(response.data.message);
         fetchProjectDetails();
       }
@@ -167,17 +167,17 @@ function ProjectDetails() {
       toast.error("Please select a role");
       return;
     }
-    
+
     try {
       const response = await axios.post(
         `${PROJECT_API_END_POINT}/${id}/participation`,
-        { 
+        {
           action: "request",
-          role: selectedRole 
+          role: selectedRole
         },
         { withCredentials: true }
       );
-      
+
       if (response.data.success) {
         toast.success(response.data.message);
         fetchProjectDetails();
@@ -185,6 +185,21 @@ function ProjectDetails() {
     } catch (error) {
       toast.error(error.response?.data?.message || "Error submitting request");
       console.error(error);
+    }
+  };
+  const handleRejectProposal = async () => {
+    if (!window.confirm("Reject this proposal? This action cannot be undone.")) return;
+    try {
+      const response = await axios.delete(
+        `${PROJECT_API_END_POINT}/${id}/reject`,
+        { withCredentials: true }
+      );
+      if (response.data.success) {
+        toast.success(response.data.message);
+        navigate('/projects');
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Error rejecting project");
     }
   };
 
@@ -195,7 +210,7 @@ function ProjectDetails() {
 
   const isUserAuthorized = () => {
     if (!user || !project) return false;
-    
+
     return (
       project.initiator?._id === user._id ||
       project.mentor?._id === user._id
@@ -228,6 +243,10 @@ function ProjectDetails() {
     }
   };
 
+  const navigateToUser = (uid) => {
+    if (uid) navigate(`/users/${uid}`);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -257,7 +276,7 @@ function ProjectDetails() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navigationbar />
-      
+
       <div className="max-w-6xl mx-auto mt-28 px-4 w-full">
         {/* Breadcrumb */}
         <div className="flex items-center gap-1 mb-4 text-sm text-gray-500 dark:text-gray-400">
@@ -265,7 +284,7 @@ function ProjectDetails() {
           <ChevronRight className="h-4 w-4" />
           <span className="font-medium text-gray-700 dark:text-gray-300 truncate max-w-[300px]">{project.title}</span>
         </div>
-        
+
         {/* Project Header */}
         <div className="rounded-2xl p-6 bg-white dark:bg-black mb-6" style={{ boxShadow: "0 0 20px rgba(34, 42, 53, 0.08), 0 2px 4px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(34, 42, 53, 0.05), 0 0 6px rgba(34, 42, 53, 0.08), 0 12px 40px rgba(47, 48, 55, 0.05), 0 1px 0 rgba(255, 255, 255, 0.08) inset" }}>
           <div className="flex flex-col md:flex-row justify-between gap-4 mb-2">
@@ -277,18 +296,18 @@ function ProjectDetails() {
               {participationStatus && getParticipationStatusBadge(participationStatus)}
             </div>
           </div>
-          
+
           <div className="flex flex-wrap gap-2 mb-4">
             {project.tags?.map((tag, index) => (
-              <span 
-                key={index} 
+              <span
+                key={index}
                 className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs rounded-full"
               >
                 {tag}
               </span>
             ))}
           </div>
-          
+
           <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-4">
             <div className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
@@ -299,11 +318,11 @@ function ProjectDetails() {
               <span>Updated: {formatDate(project.updatedAt)}</span>
             </div>
           </div>
-          
+
           <p className="text-gray-700 dark:text-gray-300 mb-6 whitespace-pre-line">
             {project.description}
           </p>
-          
+
           {/* Project Progress */}
           {(project.status === "approved" || project.status === "ongoing") && (
             <div className="mb-6">
@@ -312,12 +331,12 @@ function ProjectDetails() {
                 <span className="text-sm font-medium">{project.progressPercentage || 0}%</span>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                <div 
-                  className="bg-gradient-to-r from-blue-400 to-blue-600 h-2.5 rounded-full" 
+                <div
+                  className="bg-gradient-to-r from-blue-400 to-blue-600 h-2.5 rounded-full"
                   style={{ width: `${project.progressPercentage || 0}%` }}
                 ></div>
               </div>
-              
+
               {isUserAuthorized() && (
                 <div className="flex justify-end mt-2">
                   <Select onValueChange={(value) => handleProgressUpdate(parseInt(value))}>
@@ -336,16 +355,16 @@ function ProjectDetails() {
               )}
             </div>
           )}
-          
+
           {/* Project Team */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h3 className="text-sm font-medium mb-2">Project Initiator</h3>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigateToUser(project.initiator?._id)}>
                 {project.initiator?.profile?.profilePhotoUrl ? (
-                  <img 
-                    src={project.initiator.profile.profilePhotoUrl} 
-                    alt={project.initiator.name} 
+                  <img
+                    src={project.initiator.profile.profilePhotoUrl}
+                    alt={project.initiator.name}
                     className="w-10 h-10 rounded-full object-cover"
                   />
                 ) : (
@@ -354,22 +373,22 @@ function ProjectDetails() {
                   </div>
                 )}
                 <div>
-                  <div className="font-medium">{project.initiator?.name}</div>
+                  <div className="font-medium hover:underline">{project.initiator?.name}</div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">
                     {project.initiator?.role === "faculty" ? "Faculty" : "Student"}
                   </div>
                 </div>
               </div>
             </div>
-            
+
             {project.mentor && (
               <div>
                 <h3 className="text-sm font-medium mb-2">Project Mentor</h3>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigateToUser(project.mentor?._id)}>
                   {project.mentor?.profile?.profilePhotoUrl ? (
-                    <img 
-                      src={project.mentor.profile.profilePhotoUrl} 
-                      alt={project.mentor.name} 
+                    <img
+                      src={project.mentor.profile.profilePhotoUrl}
+                      alt={project.mentor.name}
                       className="w-10 h-10 rounded-full object-cover"
                     />
                   ) : (
@@ -378,7 +397,7 @@ function ProjectDetails() {
                     </div>
                   )}
                   <div>
-                    <div className="font-medium">{project.mentor?.name}</div>
+                    <div className="font-medium hover:underline">{project.mentor?.name}</div>
                     <div className="text-sm text-gray-500 dark:text-gray-400">
                       Faculty Mentor
                     </div>
@@ -387,21 +406,21 @@ function ProjectDetails() {
               </div>
             )}
           </div>
-          
+
           {/* Action Buttons */}
           {isUserAuthorized() && project.status === "approved" && (
             <div className="mt-6">
-              <Button 
+              <Button
                 onClick={() => handleStatusChange("ongoing")}
               >
                 Start Project
               </Button>
             </div>
           )}
-          
+
           {isUserAuthorized() && project.status === "ongoing" && (
             <div className="mt-6">
-              <Button 
+              <Button
                 onClick={() => handleStatusChange("finished")}
               >
                 Complete Project
@@ -409,40 +428,44 @@ function ProjectDetails() {
             </div>
           )}
         </div>
-        
-        {/* Faculty Approval Button */}
-        {user && 
-         user.role === "faculty" && 
-         project.status === "proposed" && 
-         !project.mentor && 
-         project.initiator?._id !== user._id && (
-          <div className="mt-6">
-            <Button 
-              onClick={async () => {
-                try {
-                  const response = await axios.post(
-                    `${PROJECT_API_END_POINT}/${id}/approve-as-mentor`,
-                    {},
-                    { withCredentials: true }
-                  );
-                  
-                  if (response.data.success) {
-                    toast.success("Successfully approved project and assigned as mentor");
-                    fetchProjectDetails();
+
+        {user &&
+          user.role === "faculty" &&
+          project.status === "proposed" &&
+          !project.mentor &&
+          project.initiator?._id !== user._id && (
+            <div className="my-6 flex gap-4">
+              <Button
+                onClick={async () => {
+                  try {
+                    const response = await axios.post(
+                      `${PROJECT_API_END_POINT}/${id}/approve-as-mentor`,
+                      {},
+                      { withCredentials: true }
+                    );
+                    if (response.data.success) {
+                      toast.success("Successfully approved project and assigned as mentor");
+                      fetchProjectDetails();
+                    }
+                  } catch (error) {
+                    toast.error(error.response?.data?.message || "Error approving project");
                   }
-                } catch (error) {
-                  toast.error(error.response?.data?.message || "Error approving project");
-                  console.error(error);
-                }
-              }}
-              className="bg-gradient-to-l from-blue-500 to-blue-700 group/btn relative shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] hover:scale-103 hover:shadow-lg hover:from-blue-400 hover:to-blue-600"
-            >
-              Approve & Become Mentor
-              <BottomGradient />
-            </Button>
-          </div>
-        )}
-        
+                }}
+                className="bg-gradient-to-l from-blue-500 to-blue-700 group/btn relative shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] hover:scale-103 hover:shadow-lg hover:from-blue-400 hover:to-blue-600"
+              >
+                Approve & Become Mentor
+                <BottomGradient />
+              </Button>
+              <Button
+                onClick={handleRejectProposal}
+                className="bg-red-600 hover:bg-red-500"
+              >
+                Reject Proposal
+              </Button>
+            </div>
+          )}
+
+
         {/* Project Content Tabs */}
         <div className="rounded-2xl bg-white dark:bg-black overflow-hidden mb-8" style={{ boxShadow: "0 0 20px rgba(34, 42, 53, 0.08), 0 2px 4px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(34, 42, 53, 0.05), 0 0 6px rgba(34, 42, 53, 0.08), 0 12px 40px rgba(47, 48, 55, 0.05), 0 1px 0 rgba(255, 255, 255, 0.08) inset" }}>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -460,7 +483,7 @@ function ProjectDetails() {
                 Attachments
               </TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="details" className="p-6">
               <div className="mb-6">
                 <h3 className="text-lg font-medium mb-4">Department</h3>
@@ -468,14 +491,14 @@ function ProjectDetails() {
                   {project.department}
                 </p>
               </div>
-              
+
               {project.openRoles && project.openRoles.length > 0 && (
                 <div>
                   <h3 className="text-lg font-medium mb-4">Open Roles</h3>
                   <div className="space-y-4">
                     {project.openRoles.map((role, index) => (
-                      <div 
-                        key={index} 
+                      <div
+                        key={index}
                         className="p-4 border border-gray-200 dark:border-gray-800 rounded-lg"
                       >
                         <h4 className="font-medium">{role.title}</h4>
@@ -483,7 +506,7 @@ function ProjectDetails() {
                       </div>
                     ))}
                   </div>
-                  
+
                   {/* Request to Join */}
                   {user && !participationStatus && project.status !== "finished" && (
                     <div className="mt-6 p-4 border border-gray-200 dark:border-gray-800 rounded-lg">
@@ -511,24 +534,24 @@ function ProjectDetails() {
                 </div>
               )}
             </TabsContent>
-            
+
             <TabsContent value="team" className="p-6">
               <h3 className="text-lg font-medium mb-4">Project Participants</h3>
-              
+
               {project.participants && project.participants.length > 0 ? (
                 <div className="space-y-4">
                   {project.participants
                     .filter(p => p.status === 'accepted')
                     .map((participant, index) => (
-                      <div 
-                        key={index} 
+                      <div
+                        key={index}
                         className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-800 rounded-lg"
                       >
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigateToUser(participant.user?._id)}>
                           {participant.user?.profile?.profilePhotoUrl ? (
-                            <img 
-                              src={participant.user.profile.profilePhotoUrl} 
-                              alt={participant.user.name} 
+                            <img
+                              src={participant.user.profile.profilePhotoUrl}
+                              alt={participant.user.name}
                               className="w-10 h-10 rounded-full object-cover"
                             />
                           ) : (
@@ -537,7 +560,7 @@ function ProjectDetails() {
                             </div>
                           )}
                           <div>
-                            <div className="font-medium">{participant.user?.name}</div>
+                            <div className="font-medium hover:underline">{participant.user?.name}</div>
                             <div className="text-sm text-gray-500 dark:text-gray-400">
                               {participant.role}
                             </div>
@@ -555,7 +578,7 @@ function ProjectDetails() {
                   </p>
                 </div>
               )}
-              
+
               {isUserAuthorized() && (
                 <div className="mt-6">
                   <h3 className="text-lg font-medium mb-4">Pending Requests</h3>
@@ -564,15 +587,15 @@ function ProjectDetails() {
                       {project.participants
                         .filter(p => p.status === 'requested')
                         .map((participant, index) => (
-                          <div 
-                            key={index} 
+                          <div
+                            key={index}
                             className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-800 rounded-lg"
                           >
                             <div className="flex items-center gap-3">
                               {participant.user?.profile?.profilePhotoUrl ? (
-                                <img 
-                                  src={participant.user.profile.profilePhotoUrl} 
-                                  alt={participant.user.name} 
+                                <img
+                                  src={participant.user.profile.profilePhotoUrl}
+                                  alt={participant.user.name}
                                   className="w-10 h-10 rounded-full object-cover"
                                 />
                               ) : (
@@ -587,17 +610,17 @@ function ProjectDetails() {
                                 </div>
                               </div>
                             </div>
-                            
+
                             <div className="flex gap-2">
-                              <Button 
-                                size="sm" 
+                              <Button
+                                size="sm"
                                 variant="outline"
                                 className="text-green-600 border-green-600 hover:bg-green-50 dark:hover:bg-green-950"
                                 onClick={async () => {
                                   try {
                                     const response = await axios.post(
                                       `${PROJECT_API_END_POINT}/${id}/participation`,
-                                      { 
+                                      {
                                         action: "accept",
                                         userId: participant.user._id
                                       },
@@ -615,15 +638,15 @@ function ProjectDetails() {
                                 <CheckCircle className="mr-1 h-3 w-3" />
                                 Accept
                               </Button>
-                              <Button 
-                                size="sm" 
+                              <Button
+                                size="sm"
                                 variant="outline"
                                 className="text-red-600 border-red-600 hover:bg-red-50 dark:hover:bg-red-950"
                                 onClick={async () => {
                                   try {
                                     const response = await axios.post(
                                       `${PROJECT_API_END_POINT}/${id}/participation`,
-                                      { 
+                                      {
                                         action: "reject",
                                         userId: participant.user._id
                                       },
@@ -653,15 +676,15 @@ function ProjectDetails() {
                 </div>
               )}
             </TabsContent>
-            
+
             <TabsContent value="discussion" className="p-6">
               {user ? (
                 <form onSubmit={handleCommentSubmit} className="mb-6">
                   <div className="flex gap-3">
                     {user?.profile?.profilePhotoUrl ? (
-                      <img 
-                        src={user.profile.profilePhotoUrl} 
-                        alt={user.name} 
+                      <img
+                        src={user.profile.profilePhotoUrl}
+                        alt={user.name}
                         className="w-10 h-10 rounded-full object-cover"
                       />
                     ) : (
@@ -692,28 +715,26 @@ function ProjectDetails() {
                   </Button>
                 </div>
               )}
-              
+
               <Separator className="my-6" />
-              
+
               {project.comments && project.comments.length > 0 ? (
                 <div className="space-y-6">
                   {project.comments.map((comment) => (
                     <div key={comment._id} className="space-y-4">
                       <div className="flex gap-3">
-                        {comment.user?.profile?.profilePhotoUrl ? (
-                          <img 
-                            src={comment.user.profile.profilePhotoUrl} 
-                            alt={comment.user.name} 
-                            className="w-10 h-10 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center font-medium text-gray-600 dark:text-gray-300">
-                            {comment.user?.name?.charAt(0) || "U"}
-                          </div>
-                        )}
+                        <div className="cursor-pointer" onClick={() => navigateToUser(comment.user?._id)}>
+                          {comment.user?.profile?.profilePhotoUrl ? (
+                            <img src={comment.user.profile.profilePhotoUrl} alt={comment.user.name} className="w-10 h-10 rounded-full object-cover" />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center font-medium text-gray-600 dark:text-gray-300">
+                              {comment.user?.name?.charAt(0) || "U"}
+                            </div>
+                          )}
+                        </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
-                            <div>
+                            <div className="cursor-pointer hover:underline" onClick={() => navigateToUser(comment.user?._id)}>
                               <span className="font-medium">{comment.user?.name}</span>
                               <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
                                 {formatDate(comment.createdAt)}
@@ -724,21 +745,21 @@ function ProjectDetails() {
                             {comment.text}
                           </p>
                           {user && (
-                            <button 
+                            <button
                               className="text-sm text-blue-600 dark:text-blue-400 mt-2 hover:underline"
                               onClick={() => setShowReplyInput({
-                                ...showReplyInput, 
+                                ...showReplyInput,
                                 [comment._id]: !showReplyInput[comment._id]
                               })}
                             >
                               Reply
                             </button>
                           )}
-                          
+
                           {/* Reply input */}
                           {user && showReplyInput[comment._id] && (
                             <div className="mt-3 flex gap-2">
-                              <Input 
+                              <Input
                                 value={replyText[comment._id] || ''}
                                 onChange={(e) => setReplyText({
                                   ...replyText,
@@ -746,7 +767,7 @@ function ProjectDetails() {
                                 })}
                                 placeholder="Write a reply..."
                               />
-                              <Button 
+                              <Button
                                 onClick={() => handleReplySubmit(comment._id)}
                                 disabled={!replyText[comment._id]?.trim()}
                               >
@@ -754,16 +775,16 @@ function ProjectDetails() {
                               </Button>
                             </div>
                           )}
-                          
+
                           {/* Replies */}
                           {comment.replies && comment.replies.length > 0 && (
                             <div className="mt-4 pl-6 space-y-4">
                               {comment.replies.map((reply, index) => (
                                 <div key={index} className="flex gap-3">
                                   {reply.user?.profile?.profilePhotoUrl ? (
-                                    <img 
-                                      src={reply.user.profile.profilePhotoUrl} 
-                                      alt={reply.user.name} 
+                                    <img
+                                      src={reply.user.profile.profilePhotoUrl}
+                                      alt={reply.user.name}
                                       className="w-8 h-8 rounded-full object-cover"
                                     />
                                   ) : (
@@ -801,13 +822,13 @@ function ProjectDetails() {
                 </div>
               )}
             </TabsContent>
-            
+
             <TabsContent value="attachments" className="p-6">
               {project.attachments && project.attachments.length > 0 ? (
                 <div className="space-y-4">
                   {project.attachments.map((attachment, index) => (
-                    <div 
-                      key={index} 
+                    <div
+                      key={index}
                       className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-800 rounded-lg"
                     >
                       <div className="flex items-center gap-3">
@@ -819,9 +840,9 @@ function ProjectDetails() {
                           </div>
                         </div>
                       </div>
-                      <a 
-                        href={attachment.fileUrl} 
-                        target="_blank" 
+                      <a
+                        href={attachment.fileUrl}
+                        target="_blank"
                         rel="noreferrer"
                         className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline"
                       >
@@ -840,17 +861,17 @@ function ProjectDetails() {
                   </p>
                 </div>
               )}
-              
+
               {user && (participationStatus === "accepted" || isUserAuthorized()) && (
                 <div className="mt-6 p-4 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
                   <h4 className="font-medium mb-3">Upload Attachment</h4>
                   <div className="space-y-3">
-                    <Input 
-                      type="file" 
+                    <Input
+                      type="file"
                       className="cursor-pointer"
                     />
-                    <Input 
-                      placeholder="Attachment title" 
+                    <Input
+                      placeholder="Attachment title"
                     />
                     <div className="flex justify-end">
                       <Button>

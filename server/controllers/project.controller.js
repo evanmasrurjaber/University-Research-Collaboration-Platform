@@ -155,8 +155,6 @@ export const updateProjectStatus = async (req, res) => {
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found" });
         }
-        
-        // Only faculty can update status
         if (user.role !== 'faculty') {
             return res.status(403).json({ 
                 success: false, 
@@ -169,25 +167,24 @@ export const updateProjectStatus = async (req, res) => {
             return res.status(404).json({ success: false, message: "Project not found" });
         }
         
-        // Check if user is the mentor or initiator if it's a faculty
         const isMentor = project.mentor && project.mentor.toString() === userId;
         const isInitiator = project.initiator.toString() === userId;
         
         if (!isMentor && !isInitiator) {
-            // If not mentor yet, faculty can assign themselves as mentor when approving
             if (status === 'approved' && project.status === 'proposed' && !project.mentor) {
                 project.mentor = userId;
             } else {
                 return res.status(403).json({
                     success: false,
-                    message: "You don't have permission to update this project's status"
+                    message: "You must be mentor or initiator to change status (or approve to become mentor)."
                 });
             }
         }
-        
-        // Add notification when project is approved
-        if (status === 'approved' && project.status !== 'approved') {
-            // Notify the initiator that their project was approved
+
+        const previousStatus = project.status;
+
+        // Handle notifications for specific transitions
+        if (status === 'approved' && previousStatus !== 'approved') {
             await createNotification(
                 project.initiator.toString(),
                 'project_approved',
@@ -196,28 +193,29 @@ export const updateProjectStatus = async (req, res) => {
                 userId
             );
         }
-        
-        // Add notification when project is completed
-        if (status === 'finished' && project.status !== 'finished') {
-            // Get all participants
-            const participantIds = project.participants
-                .filter(p => p.status === 'accepted')
-                .map(p => p.user.toString());
-                
-            // Create notifications for all participants
-            for (const participantId of participantIds) {
-                if (participantId !== userId) { // Don't notify the user making the update
-                    await createNotification(
-                        participantId,
-                        'project_completed',
-                        `The project "${project.title}" has been marked as completed!`,
-                        project._id,
-                        userId
-                    );
-                }
-            }
+
+        // OPTIONAL: Only add this block if you introduce a 'rejected' status instead of deleting
+        if (status === 'rejected' && previousStatus !== 'rejected') {
+            await createNotification(
+                project.initiator.toString(),
+                'project_rejected',
+                `Your project "${project.title}" has been rejected.`,
+                project._id,
+                userId
+            );
         }
-        
+
+        if (status === 'finished' && previousStatus !== 'finished') {
+            // (You can also notify participants here if desired)
+            await createNotification(
+                project.initiator.toString(),
+                'project_finished',
+                `Your project "${project.title}" has been marked as finished.`,
+                project._id,
+                userId
+            );
+        }
+
         project.status = status;
         await project.save();
         
@@ -815,3 +813,75 @@ export const approveAsMentor = async (req, res) => {
         });
     }
 };
+export const rejectProjectProposal = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const facultyUser = await userModel.findById(req.user.id);
+        if (!facultyUser) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+        if (facultyUser.role !== "faculty") {
+            return res.status(403).json({
+                success: false,
+                message: "Only faculty members can reject project proposals"
+            });
+        }
+
+        const project = await projectModel.findById(id);
+        if (!project) {
+            return res.status(404).json({ success: false, message: "Project not found" });
+        }
+        if (project.status !== "proposed") {
+            return res.status(400).json({
+                success: false,
+                message: "Only proposed projects can be rejected"
+            });
+        }
+        if (project.initiator.toString() === facultyUser._id.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: "You cannot reject your own proposal"
+            });
+        }
+
+        const initiatorId = project.initiator.toString();
+        const projectId = project._id.toString();
+        const title = project.title;
+
+        // Create notification BEFORE deletion (was after + passed null)
+        try {
+            console.log("[rejectProjectProposal] Creating notification for initiator:", initiatorId, "project:", projectId);
+            await createNotification(
+                initiatorId,
+                'project_rejected',
+                `Your project proposal "${title}" has been rejected.`,
+                projectId,
+                facultyUser._id.toString()
+            );
+            console.log("[rejectProjectProposal] Notification created");
+        } catch (nErr) {
+            console.error("[rejectProjectProposal] Notification error:", nErr);
+            // Continue anyway
+        }
+
+        // Hard delete
+        await project.deleteOne();
+        console.log("[rejectProjectProposal] Project deleted:", projectId);
+
+        return res.status(200).json({
+            success: true,
+            message: "Project proposal rejected and removed"
+        });
+    } catch (error) {
+        console.error("[rejectProjectProposal] Fatal error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Server error while rejecting project"
+        });
+    }
+};
+
+// OPTIONAL soft-rejection variant (use instead of deletion if you prefer)
+// export const rejectProjectProposal = async (req, res) => {
+//   ... set project.status = 'rejected'; await project.save(); createNotification(...);
+// };

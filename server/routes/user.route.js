@@ -1,5 +1,5 @@
 import express from 'express';
-import {login, register, logout, updateProfile, getTheme, updateTheme, getProfile} from '../controllers/user.controller.js';
+import {login, register, logout, updateProfile, getTheme, updateTheme, getProfile, getUserProfile} from '../controllers/user.controller.js';
 import isAuthenticated from '../middlewares/isAuthenticated.js';
 import upload from '../middlewares/multer.js';
 import singleUpload from '../middlewares/multer.js';
@@ -13,5 +13,6 @@ router.route('/profile/update').post(isAuthenticated, singleUpload, updateProfil
 router.route('/theme').get(isAuthenticated, getTheme);
 router.route('/theme/update').post(isAuthenticated, updateTheme);
 router.route('/me').get(isAuthenticated, getProfile);
+router.route('/:id').get(getUserProfile);
 
 export default router;

@@ -10,7 +10,8 @@ import {
     addComment,
     getMyProjects,
     getPendingProjects,
-    approveAsMentor
+    approveAsMentor,
+    rejectProjectProposal
 } from '../controllers/project.controller.js';
 import isAuthenticated from '../middlewares/isAuthenticated.js';
 import singleUpload from '../middlewares/multer.js';
@@ -48,5 +49,8 @@ router.route('/:id/participation').post(isAuthenticated, manageParticipation);
 
 // Add comment to project
 router.route('/:id/comment').post(isAuthenticated, addComment);
+
+// Reject project proposal
+router.delete('/:id/reject', isAuthenticated, rejectProjectProposal);
 
 export default router;
