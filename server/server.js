@@ -13,7 +13,7 @@ const app = express();
 app.set('trust proxy', 1);
 
 // CORS: allow your client origin + local dev
-const allowedOrigin = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
+const allowedOrigin = process.env.CLIENT_ORIGIN;
 app.use(cors({
   origin: allowedOrigin,
   credentials: true,
