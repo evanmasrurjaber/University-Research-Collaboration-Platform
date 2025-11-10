@@ -2,13 +2,5 @@
   "version": 2,
   "builds": [
     { "src": "server.js", "use": "@vercel/node" }
-  ],
-  "env": {
-    "MONGODB_URI": "@mongodb_uri",
-    "JWT_SECRET": "@jwt_secret",
-    "CLOUD_NAME": "@cloud_name",
-    "API_KEY": "@cloudinary_key",
-    "API_SECRET": "@cloudinary_secret",
-    "CLIENT_ORIGIN": "@client_origin"
-  }
+  ]
 }

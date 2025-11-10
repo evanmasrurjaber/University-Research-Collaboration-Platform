@@ -40,8 +40,8 @@ export const register = async (req, res) => {
         return res.cookie("token", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-            maxAge: 1 * 24 * 60 * 60 * 1000
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000
         }).json({success: true, user: userResponse, message: `Account for ${userResponse.name} created successfully!`});
 
     }catch (error){
@@ -77,8 +77,8 @@ export const login = async(req, res) => {
         return res.cookie("token", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-            maxAge: 1 * 24 * 60 * 60 * 1000
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000
         }).json({success: true, user: userResponse, message: `Welcome back ${userResponse.name.split(" ")[0]}`});
 
     } catch(error){
