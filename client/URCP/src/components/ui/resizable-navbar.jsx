@@ -199,7 +199,7 @@ export const NavbarLogo = () => {
       href="/"
       className="relative z-20 mr-4 flex items-center space-x-2 px-4 py-1 text-sm font-normal text-black">
       <img
-        src={theme === 'dark' ? "/src/assets/URCP logo light.png" : "/src/assets/URCP logo dark.png"}
+        src={theme === 'dark' ? "https://res.cloudinary.com/dqotbvhes/image/upload/v1762780486/URCP_logo_light_eevpar.png" : "https://res.cloudinary.com/dqotbvhes/image/upload/v1762780485/URCP_logo_dark_vea47d.png"}
         alt="logo"
         width={30}
         height={30} />
@@ -247,7 +247,7 @@ export const ProfileImage = ({
   ...props
 }) => {
   const { user } = useAuth();
-  const defaultImage = "/src/assets/default_profile_pic.PNG";
+  const defaultImage = "https://res.cloudinary.com/dqotbvhes/image/upload/v1762780485/default_profile_pic_s8bcog.png";
   return (
     <div
       className={cn(
