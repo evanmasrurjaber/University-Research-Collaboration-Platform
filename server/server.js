@@ -13,11 +13,13 @@ connectDB();
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({origin: 'http://localhost:5173', 
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+const allowedOrigin = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
 
+app.use(cors({
+  origin: allowedOrigin,
+  credentials: true,
+  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization']
 }));
 app.use("/api/user", userRoutes);
 app.use("/api/project", projectRoutes);
@@ -25,4 +27,7 @@ app.use('/api/notifications', notificationRoutes);
 
 app.get('/', (req, res) => res.send('API working'))
 
-app.listen(port, () => console.log(`Server is running on port ${port}`));
+if (!process.env.VERCEL) {
+  app.listen(port, () => console.log(`Server running on port ${port}`));
+}
+export default app;
