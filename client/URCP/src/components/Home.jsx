@@ -55,7 +55,7 @@ function Home() {
   );
 
   return (
-    <div className="h-fit flex flex-col gap-20 bg-white dark:bg-gray-900 min-h-screen">
+    <div className="h-fit flex flex-col gap-20 bg-white min-h-screen">
       <Navigationbar />
       <main className="flex-1">
         {/* Hero Section */}
