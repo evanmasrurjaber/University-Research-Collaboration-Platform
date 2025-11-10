@@ -55,7 +55,7 @@ function Home() {
   );
 
   return (
-    <div className="min-h-full flex flex-col gap-20">
+    <div className="h-fit flex flex-col gap-20">
       <Navigationbar />
       <main className="flex-1">
         {/* Hero Section */}
@@ -67,20 +67,14 @@ function Home() {
             <p className="text-2xl font-semibold md:text-base text-gray-600 dark:text-gray-400 max-w-2xl leading-relaxed">
               Discover projects, connect with mentors, recruit collaborators, and track progress in one unified academic workspace.
             </p>
-            <div className="flex flex-wrap gap-3">
-              <button
-                onClick={() => navigate('/projects')}
-                className="group/btn relative rounded-lg bg-gradient-to-l from-blue-500 to-blue-700 px-5 py-3 text-sm font-medium text-white hover:shadow-lg hover:scale-[1.02] transition"
-              >
-                Browse Projects
-                <BottomGlow />
-              </button>
+            <div>
               {user && (
                 <button
                   onClick={() => navigate('/project/new')}
-                  className="rounded-lg px-5 py-3 text-sm font-medium border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                  className="group/btn relative rounded-lg bg-gradient-to-l from-blue-500 to-blue-700 px-5 py-3 text-sm font-medium text-white hover:shadow-lg hover:scale-[1.02] transition"
                 >
                   Create Project
+                  <BottomGlow />
                 </button>
               )}
               {!user && (
@@ -97,27 +91,27 @@ function Home() {
 
         {/* Quick Actions */}
         <section className="px-6 md:px-10 pb-10 max-w-6xl mx-auto">
-            <h2 className="text-sm font-semibold mb-4 tracking-wide text-gray-500 dark:text-gray-400">Quick Actions</h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <QuickAction
-                icon={<Newspaper size={20} />}
-                label="Browse Projects"
-                accent="from-blue-500/20 to-blue-600/30 text-blue-600 dark:text-blue-300"
-                onClick={() => navigate('/projects')}
-              />
-              <QuickAction
-                icon={<PlusCircle size={20} />}
-                label="New Project"
-                accent="from-purple-500/20 to-purple-600/30 text-purple-600 dark:text-purple-300"
-                onClick={() => navigate('/project/new')}
-              />
-              <QuickAction
-                icon={<UserCircle2 size={20} />}
-                label="People"
-                accent="from-emerald-500/20 to-emerald-600/30 text-emerald-600 dark:text-emerald-300"
-                onClick={() => navigate('/')}
-              />
-            </div>
+          <h2 className="text-sm font-semibold mb-4 tracking-wide text-gray-500 dark:text-gray-400">Quick Actions</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <QuickAction
+              icon={<Newspaper size={20} />}
+              label="Browse Projects"
+              accent="from-blue-500/20 to-blue-600/30 text-blue-600 dark:text-blue-300"
+              onClick={() => navigate('/projects')}
+            />
+            <QuickAction
+              icon={<UserCircle2 size={20} />}
+              label="People"
+              accent="from-emerald-500/20 to-emerald-600/30 text-emerald-600 dark:text-emerald-300"
+              onClick={() => navigate('/people')}
+            />
+            <QuickAction
+              icon={<PlusCircle size={20} />}
+              label="Stories"
+              accent="from-purple-500/20 to-purple-600/30 text-purple-600 dark:text-purple-300"
+              onClick={() => navigate('/stories')}
+            />
+          </div>
         </section>
 
         {/* Recent Projects */}

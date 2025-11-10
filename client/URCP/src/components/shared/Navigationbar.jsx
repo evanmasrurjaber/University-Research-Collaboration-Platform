@@ -9,7 +9,7 @@ import {
 } from "../ui/resizable-navbar";
 import { Popover, PopoverTrigger, PopoverContent } from "@heroui/popover";
 import 'lucide-react';
-import { LogOut, LucideNewspaper, User2 } from 'lucide-react';
+import { LogOut, LucideNewspaper, User2, Newspaper } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext.jsx'
 import { useAuth } from '@/context/AuthContext.jsx'
 import { BsMoonFill } from "react-icons/bs";
@@ -35,11 +35,12 @@ export const Navigationbar = () => {
     },
     {
       name: "People 👤",
-      link: "#pricing",
+      link: "/people",
     },
     {
       name: "Stories 📖",
-      link: "#stories",
+      link: "/stories",
+      icon: <Newspaper size={18} />,
     },
   ];
 

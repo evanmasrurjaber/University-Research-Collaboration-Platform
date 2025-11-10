@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { ChevronRight, Pencil } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 const statusColor = (s) => {
   switch (s) {
@@ -24,6 +25,7 @@ function UserProfile() {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { user: loggedInUser } = useAuth();
 
   const formatDate = (d) =>
     new Date(d).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
@@ -78,42 +80,55 @@ function UserProfile() {
     }
     return (
       <div className="space-y-3">
-        {list.map((p) => (
-          <div
-            key={p._id}
-            role="button"
-            tabIndex={0}
-            onClick={() => navigate(`/project/${p._id}`)}
-            onKeyDown={(e) => e.key === 'Enter' && navigate(`/project/${p._id}`)}
-            className="p-4 rounded-lg border border-gray-200 dark:border-gray-800 flex flex-col gap-1 hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer relative"
-          >
-            <div className="flex items-center justify-between">
-              <span className="font-medium">{p.title}</span>
-              <div className="flex items-center gap-2">
-                <Badge className={`${statusColor(p.status)} capitalize`}>{p.status.replace('_', ' ')}</Badge>
-                {editable && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/project/${p._id}/edit`);
-                    }}
-                    className="p-1 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-md"
-                    title="Edit Project"
-                  >
-                    <Pencil size={16} />
-                  </button>
+        {list.map((p) => {
+          const canEdit = loggedInUser && (
+            p.initiator?._id === loggedInUser._id || 
+            p.mentor?._id === loggedInUser._id
+          );
+          
+          console.log('Project:', p.title);
+          console.log('Initiator ID:', p.initiator?._id);
+          console.log('Mentor ID:', p.mentor?._id);
+          console.log('Logged In User ID:', loggedInUser?._id);
+          console.log('Can Edit:', canEdit);
+          
+          return (
+            <div
+              key={p._id}
+              role="button"
+              tabIndex={0}
+              onClick={() => navigate(`/project/${p._id}`)}
+              onKeyDown={(e) => e.key === 'Enter' && navigate(`/project/${p._id}`)}
+              className="p-4 rounded-lg border border-gray-200 dark:border-gray-800 flex flex-col gap-1 hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer relative"
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-medium">{p.title}</span>
+                <div className="flex items-center gap-2">
+                  <Badge className={`${statusColor(p.status)} capitalize`}>{p.status.replace('_', ' ')}</Badge>
+                  {canEdit && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/project/${p._id}/edit`);
+                      }}
+                      className="p-1 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-md"
+                      title="Edit Project"
+                    >
+                      <Pencil size={16} />
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 flex gap-4">
+                <span>Created: {formatDate(p.createdAt)}</span>
+                {typeof p.progressPercentage === 'number' && (
+                  <span>Progress: {p.progressPercentage}%</span>
                 )}
               </div>
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 flex gap-4">
-              <span>Created: {formatDate(p.createdAt)}</span>
-              {typeof p.progressPercentage === 'number' && (
-                <span>Progress: {p.progressPercentage}%</span>
-              )}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     );
   };
